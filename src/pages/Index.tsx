@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Search, List, Download, BarChart3, Shield, Zap, Check } from "lucide-react";
+import { ArrowRight, Search, List, Download, BarChart3, Shield, Zap, Users, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
@@ -10,72 +10,56 @@ const Index = () => {
   const features = [
     {
       icon: Search,
-      title: "Busca Inteligente",
-      description: "Encontre vídeos por código, nome, especialidade ou categoria com sistema de busca em 3 níveis.",
+      title: "Busca Avançada",
+      description: "Encontre vídeos por código, nome, especialidade ou categoria com sistema de busca inteligente.",
     },
     {
       icon: List,
-      title: "Listas Personalizadas",
-      description: "Organize seus vídeos em listas salvas e compartilhe com sua equipe.",
+      title: "Criação de Playlists",
+      description: "Crie playlists personalizadas para cada cliente com base em suas necessidades específicas.",
+    },
+    {
+      icon: Users,
+      title: "Gestão de Clientes",
+      description: "Organize e gerencie playlists por cliente, mantendo histórico e preferências.",
     },
     {
       icon: Download,
       title: "Exportação Profissional",
-      description: "Exporte suas listas em formato XLSX ou DOCX com todos os metadados.",
+      description: "Exporte playlists em diversos formatos para entrega aos clientes.",
     },
     {
       icon: BarChart3,
-      title: "Analytics Completo",
-      description: "Acompanhe métricas de uso, vídeos mais populares e tendências de conteúdo.",
+      title: "Relatórios Detalhados",
+      description: "Acompanhe métricas de uso e engajamento das playlists criadas.",
     },
     {
       icon: Shield,
-      title: "Segurança Enterprise",
-      description: "Controle de acesso baseado em roles (RBAC) e criptografia de dados.",
-    },
-    {
-      icon: Zap,
-      title: "Performance Otimizada",
-      description: "Sistema de cache inteligente e sincronização automática com Vimeo.",
+      title: "Controle de Acesso",
+      description: "Sistema seguro com controle de permissões para equipe interna.",
     },
   ];
 
-  const plans = [
+  const workflows = [
     {
-      name: "Client",
-      price: "Gratuito",
-      description: "Para uso individual",
-      features: [
-        "Busca ilimitada de vídeos",
-        "Criar e gerenciar listas",
-        "Exportação de listas próprias",
-        "Acesso ao dashboard",
-      ],
+      step: "1",
+      title: "Buscar Conteúdo",
+      description: "Use nossa busca avançada para encontrar vídeos relevantes no acervo de mais de 8.000 vídeos médicos.",
     },
     {
-      name: "Manager",
-      price: "R$ 49",
-      description: "Para equipes",
-      features: [
-        "Tudo do plano Client",
-        "Criar especialidades e categorias",
-        "Visualizar todos os usuários",
-        "Atribuir metadados aos vídeos",
-        "Suporte prioritário",
-      ],
-      popular: true,
+      step: "2", 
+      title: "Criar Playlist",
+      description: "Monte playlists personalizadas organizando os vídeos por especialidade ou tema específico.",
     },
     {
-      name: "Admin",
-      price: "R$ 99",
-      description: "Para organizações",
-      features: [
-        "Tudo do plano Manager",
-        "Gerenciar todos os usuários",
-        "Acesso total ao painel admin",
-        "Analytics completo",
-        "Suporte dedicado 24/7",
-      ],
+      step: "3",
+      title: "Personalizar para Cliente",
+      description: "Ajuste a playlist conforme as necessidades e preferências de cada cliente.",
+    },
+    {
+      step: "4",
+      title: "Entregar Conteúdo",
+      description: "Exporte e entregue a playlist finalizada ao cliente em formato profissional.",
     },
   ];
 
@@ -91,41 +75,42 @@ const Index = () => {
             <div className="space-y-8 animate-fade-in">
               <div className="inline-block px-4 py-2 bg-primary-light rounded-full">
                 <span className="text-sm font-medium text-primary">
-                  Plataforma SaaS para Gestão de Vídeos Médicos
+                  Sistema Interno TV Doutor
                 </span>
               </div>
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
-                Organize seu conteúdo{" "}
-                <span className="bg-clip-text text-transparent gradient-hero">
-                  médico educacional
-                </span>
+                Crie playlists{" "}
+                <span className="text-black">
+                  personalizadas
+                </span>{" "}
+                para seus clientes
               </h1>
               <p className="text-xl text-muted-foreground max-w-xl">
-                Busque, organize e exporte vídeos médicos do Vimeo com inteligência e eficiência. 
-                Mais de 7.000 vídeos disponíveis para sua equipe.
+                Ferramenta interna para criação e gestão de playlists de vídeos médicos personalizadas. 
+                Acesso a mais de 8.000 vídeos educacionais organizados por especialidade.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/register">
+                <Link to="/login">
                   <Button size="lg" className="gradient-primary shadow-primary group">
-                    Começar Grátis
+                    Acessar Sistema
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/search">
+                <Link to="/dashboard">
                   <Button size="lg" variant="outline">
-                    <Search className="mr-2 w-5 h-5" />
-                    Explorar Vídeos
+                    <PlayCircle className="mr-2 w-5 h-5" />
+                    Ver Dashboard
                   </Button>
                 </Link>
               </div>
               <div className="flex items-center space-x-8 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
-                  <Check className="w-5 h-5 text-success" />
-                  <span>Sem cartão de crédito</span>
+                  <Shield className="w-5 h-5 text-success" />
+                  <span>Acesso restrito à equipe</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Check className="w-5 h-5 text-success" />
-                  <span>Acesso imediato</span>
+                  <Users className="w-5 h-5 text-success" />
+                  <span>Gestão centralizada</span>
                 </div>
               </div>
             </div>
@@ -134,7 +119,7 @@ const Index = () => {
               <div className="absolute inset-0 gradient-hero opacity-20 blur-3xl rounded-full" />
               <img
                 src={heroImage}
-                alt="Plataforma TV Doutor"
+                alt="Sistema TV Doutor"
                 className="relative rounded-2xl shadow-2xl hover-lift w-full"
               />
             </div>
@@ -147,10 +132,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <h2 className="text-4xl font-bold">
-              Recursos completos para gestão profissional
+              Ferramentas completas para sua equipe
             </h2>
             <p className="text-xl text-muted-foreground">
-              Tudo que você precisa para organizar, buscar e exportar conteúdo médico educacional
+              Tudo que você precisa para criar e gerenciar playlists personalizadas para seus clientes
             </p>
           </div>
 
@@ -176,64 +161,27 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Workflow Section */}
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <h2 className="text-4xl font-bold">
-              Planos para cada necessidade
+              Fluxo de trabalho otimizado
             </h2>
             <p className="text-xl text-muted-foreground">
-              Escolha o plano ideal para você ou sua organização
+              Processo simples e eficiente para criação de playlists personalizadas
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {plans.map((plan, index) => (
-              <Card
-                key={index}
-                className={`relative hover-lift ${
-                  plan.popular
-                    ? "border-primary shadow-primary scale-105"
-                    : "border-border"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <span className="px-4 py-1 bg-primary text-primary-foreground text-sm font-medium rounded-full">
-                      Mais Popular
-                    </span>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {workflows.map((workflow, index) => (
+              <Card key={index} className="relative hover-lift border-border">
+                <CardContent className="p-6 space-y-4 text-center">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground text-xl font-bold mx-auto">
+                    {workflow.step}
                   </div>
-                )}
-                <CardContent className="p-8 space-y-6">
-                  <div>
-                    <h3 className="text-2xl font-bold">{plan.name}</h3>
-                    <p className="text-muted-foreground mt-1">{plan.description}</p>
-                  </div>
-                  <div className="flex items-baseline">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    {plan.price !== "Gratuito" && (
-                      <span className="text-muted-foreground ml-2">/mês</span>
-                    )}
-                  </div>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start space-x-3">
-                        <Check className="w-5 h-5 text-success mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to="/register">
-                    <Button
-                      className={`w-full ${
-                        plan.popular ? "gradient-primary shadow-primary" : ""
-                      }`}
-                      variant={plan.popular ? "default" : "outline"}
-                    >
-                      Começar Agora
-                    </Button>
-                  </Link>
+                  <h3 className="text-xl font-semibold">{workflow.title}</h3>
+                  <p className="text-muted-foreground text-sm">{workflow.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -241,26 +189,51 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="py-24 bg-card">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div className="space-y-2">
+              <div className="text-4xl font-bold text-primary">8.000+</div>
+              <div className="text-lg font-medium">Vídeos Disponíveis</div>
+              <div className="text-muted-foreground">Acervo completo de conteúdo médico</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-bold text-primary">50+</div>
+              <div className="text-lg font-medium">Especialidades</div>
+              <div className="text-muted-foreground">Cobertura ampla de áreas médicas</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-bold text-primary">100%</div>
+              <div className="text-lg font-medium">Personalização</div>
+              <div className="text-muted-foreground">Playlists sob medida para cada cliente</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-24 gradient-hero text-white">
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 className="text-4xl lg:text-5xl font-bold">
-              Pronto para transformar sua gestão de conteúdo médico?
+            <h2 className="text-4xl lg:text-5xl font-bold text-black">
+              Pronto para criar playlists incríveis?
             </h2>
-            <p className="text-xl text-white/90">
-              Junte-se a centenas de profissionais que já confiam no TV Doutor
+            <p className="text-xl text-gray-600">
+              Acesse o sistema e comece a criar conteúdo personalizado para seus clientes
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/register">
-                <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
-                  Começar Grátis
+              <Link to="/login">
+                <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
+                  Fazer Login
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                Falar com Vendas
-              </Button>
+              <Link to="/dashboard">
+                <Button size="lg" variant="outline" className="border-gray-300 text-black hover:bg-gray-50">
+                  Ver Dashboard
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,19 +1,26 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Video, Menu, X, Search, List, BarChart3, Settings, LogIn } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Video, Menu, X, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut, initialized, loading } = useAuth();
 
-  const navigation = [
-    { name: "Buscar Vídeos", href: "/search", icon: Search },
-    { name: "Minhas Listas", href: "/lists", icon: List },
-    { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  ];
+  // Removido array de navegação para uso interno
+  const navigation: any[] = [];
 
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    const result = await signOut();
+    if (result.success) {
+      navigate('/');
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -30,86 +37,48 @@ const Navbar = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Removido para uso interno */}
           <div className="hidden md:flex items-center space-x-1">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Icon className="w-4 h-4 mr-2" />
-                  {item.name}
-                </Link>
-              );
-            })}
+            {/* Menu vazio para uso interno */}
           </div>
 
-          {/* Auth Buttons */}
+          {/* Auth Buttons - Condicional baseado no estado de autenticação */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                <LogIn className="w-4 h-4 mr-2" />
-                Entrar
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button size="sm" className="gradient-primary shadow-primary">
-                Começar Grátis
-              </Button>
-            </Link>
+            {initialized && !loading && !user && (
+              <Link to="/login">
+                <Button variant="ghost" size="sm">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Entrar
+                </Button>
+              </Link>
+            )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu button - Removido pois não há itens de menu */}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-foreground hover:bg-secondary transition-colors"
+            style={{ display: 'none' }} // Oculto pois não há menu
           >
             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile menu - Removido para uso interno */}
       {isOpen && (
-        <div className="md:hidden border-t border-border animate-fade-in">
+        <div className="md:hidden border-t border-border animate-fade-in" style={{ display: 'none' }}>
           <div className="container mx-auto px-4 py-4 space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                  }`}
-                >
-                  <Icon className="w-5 h-5 mr-3" />
-                  {item.name}
-                </Link>
-              );
-            })}
+            {/* Menu mobile vazio */}
             <div className="pt-4 space-y-2 border-t border-border">
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                <Button variant="outline" className="w-full justify-start">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Entrar
-                </Button>
-              </Link>
-              <Link to="/register" onClick={() => setIsOpen(false)}>
-                <Button className="w-full gradient-primary">
-                  Começar Grátis
-                </Button>
-              </Link>
+              {initialized && !loading && !user && (
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full justify-start">
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Entrar
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>

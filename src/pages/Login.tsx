@@ -1,26 +1,48 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Video, Mail, Lock, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, user, loading: authLoading } = useAuth();
+  
+  // Redirecionar se já estiver logado
+  useEffect(() => {
+    if (user && !authLoading) {
+      const from = location.state?.from?.pathname || "/search";
+      navigate(from, { replace: true });
+    }
+  }, [user, authLoading, navigate, location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login
-    setTimeout(() => {
+    try {
+      const result = await signIn(email, password);
+      
+      if (result.success) {
+        toast.success("Login realizado com sucesso!");
+        // O redirecionamento será feito pelo useEffect acima
+      } else {
+        toast.error(result.error || "Erro ao fazer login");
+      }
+    } catch (error) {
+      toast.error("Erro inesperado ao fazer login");
+    } finally {
       setIsLoading(false);
-      toast.success("Login realizado com sucesso!");
-    }, 1500);
+    }
   };
 
   return (
@@ -95,9 +117,9 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full gradient-primary shadow-primary"
-                disabled={isLoading}
+                disabled={isLoading || authLoading}
               >
-                {isLoading ? "Entrando..." : "Entrar"}
+                {isLoading || authLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
 
