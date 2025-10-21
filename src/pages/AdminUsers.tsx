@@ -15,9 +15,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { User as DbUser } from "@/types/database";
 
 const AdminUsers = () => {
-  const { signUp, resetPassword } = useSupabase();
+  const { signUp, resetPassword, service } = useSupabase();
   const { toast } = useToast();
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -44,6 +45,32 @@ const AdminUsers = () => {
       };
       const { data, error } = await signUp(newEmail, newPassword, metadata);
       if (error) throw error;
+
+      // Sincronização com public.User (client-side)
+      const defaultOrgId = import.meta.env.VITE_DEFAULT_ORGANIZATION_ID as string | undefined;
+      const authUserId = data?.user?.id;
+      if (authUserId) {
+        const mappedRole = newRole === "admin" ? "ADMIN" : "CLIENT";
+        const payload: Partial<DbUser> = {
+          organizationId: (defaultOrgId ?? undefined) as any,
+          authProvider: "SUPABASE",
+          authProviderId: authUserId,
+          email: newEmail,
+          displayName: newName || newEmail.split("@")[0],
+          role: mappedRole,
+          isActive: false,
+          createdAt: new Date() as any,
+          updatedAt: new Date() as any,
+        };
+        try {
+          const { error: insertError } = await service.insert<DbUser>("User", payload);
+          if (insertError) {
+            console.warn("[AdminUsers] Falha ao inserir em public.User:", insertError.message);
+          }
+        } catch (err: any) {
+          console.warn("[AdminUsers] Erro na sincronização public.User:", err?.message);
+        }
+      }
 
       toast({
         title: "Usuário criado",

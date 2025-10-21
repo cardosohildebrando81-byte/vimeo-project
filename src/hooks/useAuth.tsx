@@ -10,7 +10,7 @@ interface AuthState {
 
 interface AuthActions {
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signUp: (email: string, password: string, metadata?: object) => Promise<{ success: boolean; error?: string }>
+  signUp: (email: string, password: string, metadata?: object) => Promise<{ success: boolean; error?: string; user?: AuthUser | null }>
   signOut: () => Promise<{ success: boolean; error?: string }>
   refreshSession: () => Promise<void>
 }
@@ -122,7 +122,7 @@ const useAuthInternal = (): AuthState & AuthActions => {
       }
 
       // O estado será atualizado automaticamente pelo listener
-      return { success: true }
+      return { success: true, user: (data?.user as AuthUser) ?? null }
     } catch (error) {
       setState(prev => ({ ...prev, loading: false }))
       return { 

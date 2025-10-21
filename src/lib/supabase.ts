@@ -1,8 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Configurações do Supabase
-const supabaseUrl = 'https://pugosmzjnzibqbyetbvu.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1Z29zbXpqbnppYnFieWV0YnZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxNzUyOTEsImV4cCI6MjA3NTc1MTI5MX0.h_1BqXgl5tCBguK_1UNmGJVb9vXDu8tct2z5cYuW1Jc';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('[Supabase] Variáveis de ambiente ausentes: VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY');
+}
 
 // Criação do cliente Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -121,14 +124,17 @@ export class SupabaseService {
 
   // Registro com email e senha
   async signUpWithEmail(email: string, password: string, metadata?: object): Promise<AuthResponse> {
+    // Usa URL de produção se disponível; se apontar para localhost, prefere o domínio atual
+    const envUrl = import.meta.env.VITE_APP_URL;
+    const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
+    const redirectBase = envUrl && !envUrl.includes('localhost') ? envUrl : (origin || envUrl);
+
     const { data, error } = await this.client.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        // Define explicitamente a URL de redirecionamento para confirmação de e-mail
-        // Evita depender apenas da configuração de "Site URL" do projeto na Supabase
-        emailRedirectTo: `${import.meta.env.VITE_APP_URL || window.location.origin}/reset-password`
+        emailRedirectTo: `${redirectBase}/reset-password`
       }
     })
 

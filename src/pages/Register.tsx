@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Video, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useSupabase } from "@/lib/supabase";
+import type { User as DbUser } from "@/types/database";
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { signUp } = useAuth();
+  const { service } = useSupabase();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,11 +38,49 @@ const Register = () => {
 
     setIsLoading(true);
 
-    // Simulate registration
-    setTimeout(() => {
+    try {
+      // Registro real no Supabase Auth
+      const result = await signUp(formData.email, formData.password, {
+        full_name: formData.name,
+        role: "CLIENT",
+      });
+
+      if (result.success) {
+        // Sincronização opcional com tabela public.User
+        const defaultOrgId = import.meta.env.VITE_DEFAULT_ORGANIZATION_ID as string | undefined;
+        const authUserId = result.user?.id;
+        if (authUserId) {
+          const payload: Partial<DbUser> = {
+            organizationId: (defaultOrgId ?? undefined) as any,
+            authProvider: "SUPABASE",
+            authProviderId: authUserId,
+            email: formData.email,
+            displayName: formData.name || formData.email.split("@")[0],
+            role: "CLIENT",
+            isActive: false,
+            createdAt: new Date() as any,
+            updatedAt: new Date() as any,
+          };
+          try {
+            const { error: insertError } = await service.insert<DbUser>("User", payload);
+            if (insertError) {
+              console.warn("[Register] Falha ao inserir em public.User:", insertError.message);
+            }
+          } catch (err: any) {
+            console.warn("[Register] Erro ao sincronizar public.User:", err?.message);
+          }
+        }
+
+        toast.success("Conta criada com sucesso! Verifique seu e-mail para confirmar.");
+        setTimeout(() => navigate("/login"), 500);
+      } else {
+        toast.error(result.error || "Erro ao criar conta");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Erro inesperado ao criar conta");
+    } finally {
       setIsLoading(false);
-      toast.success("Conta criada com sucesso! Bem-vindo ao TV Doutor.");
-    }, 1500);
+    }
   };
 
   return (
