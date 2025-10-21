@@ -14,14 +14,12 @@ interface CacheEntry {
 /**
  * Interface para índice de busca
  */
+interface SearchIndexData {
+  searchableText: string;
+}
+
 interface SearchIndex {
-  [videoId: string]: {
-    name: string;
-    description: string;
-    uri: string;
-    tags: string[];
-    searchableText: string;
-  };
+  [videoId: string]: SearchIndexData;
 }
 
 /**
@@ -344,10 +342,6 @@ export class VideoCache {
         ].join(' ').toLowerCase();
 
         index[video.uri] = {
-          name: (video.name || '').toLowerCase(),
-          description: (video.description || '').toLowerCase(),
-          uri: (video.uri || '').toLowerCase(),
-          tags: (video.tags?.map(tag => tag.name?.toLowerCase() || '') || []),
           searchableText
         };
       });
@@ -396,7 +390,7 @@ export class VideoCache {
       // Exemplo: 'vin636' casa com 'vin636', 'vin6367', 'VIN 636 - ...', 'vin-636', 'vin_636'
       const normalizedSearchTerm = searchTerm.replace(/[^a-z0-9]/g, '');
       Object.entries(index).forEach(([uri, data]) => {
-        const text = data.searchableText;
+        const text = (data as SearchIndexData).searchableText;
         const normalizedText = text.replace(/[^a-z0-9]/g, '');
         
         if (text.includes(searchTerm) || normalizedText.includes(normalizedSearchTerm)) {

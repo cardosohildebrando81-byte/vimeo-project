@@ -24,14 +24,14 @@ async function changeUserPassword() {
 
     // Buscar o usuário pelo email
     console.log('🔍 Buscando usuário...');
-    const { data: users, error: searchError } = await supabase.auth.admin.listUsers();
+    const { data, error: searchError } = await supabase.auth.admin.listUsers();
     
     if (searchError) {
       console.error('❌ Erro ao buscar usuários:', searchError.message);
       return;
     }
 
-    const targetUser = users.users.find(user => user.email === userEmail);
+    const targetUser = data?.users?.find((user: any) => user.email === userEmail);
     
     if (!targetUser) {
       console.error('❌ Usuário não encontrado com este email');

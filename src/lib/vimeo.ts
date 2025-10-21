@@ -375,6 +375,7 @@ export const useVimeo = () => {
   const searchVideos = (query: string, page = 1, perPage = 30) => vimeoService.searchVideos(query, page, perPage);
   const getUserVideos = (page = 1, perPage = 25) => vimeoService.getUserVideos(page, perPage);
   const getVideo = (videoId: string) => vimeoService.getVideo(videoId);
+  const testConnection = () => vimeoService.testConnection();
   
-  return { searchVideos, getUserVideos, getVideo };
+  return { searchVideos, getUserVideos, getVideo, testConnection };
 };

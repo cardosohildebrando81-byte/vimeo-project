@@ -49,7 +49,7 @@ const AdminPasswordReset = () => {
 
     try {
       // Primeiro, vamos tentar buscar o usuário pelo email
-      const { data: users, error: searchError } = await client.auth.admin.listUsers();
+      const { data, error: searchError } = await client.auth.admin.listUsers();
       
       if (searchError) {
         toast.error("Erro ao buscar usuários: " + searchError.message);
@@ -57,7 +57,7 @@ const AdminPasswordReset = () => {
         return;
       }
 
-      const targetUser = users.users.find(user => user.email === email);
+      const targetUser = data?.users?.find((user: any) => user.email === email);
       
       if (!targetUser) {
         toast.error("Usuário não encontrado com este email");

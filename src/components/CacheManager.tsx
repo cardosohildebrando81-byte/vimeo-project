@@ -5,9 +5,8 @@ interface CacheInfo {
   hasCache: boolean;
   videoCount: number;
   isComplete: boolean;
+  lastPage: number;
   age: number;
-  sizeInMB: number;
-  lastUpdated: string;
 }
 
 export const CacheManager: React.FC = () => {
@@ -21,9 +20,8 @@ export const CacheManager: React.FC = () => {
       hasCache: info.hasCache,
       videoCount: info.videoCount,
       isComplete: info.isComplete,
-      age: info.age,
-      sizeInMB: info.sizeInMB,
-      lastUpdated: info.lastUpdated ? new Date(info.lastUpdated).toLocaleString('pt-BR') : 'Nunca'
+      lastPage: info.lastPage,
+      age: info.age
     });
   };
 
@@ -131,9 +129,9 @@ export const CacheManager: React.FC = () => {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-sm text-gray-600">Tamanho do Cache</div>
+            <div className="text-sm text-gray-600">Última Página</div>
             <div className="font-semibold text-gray-900">
-              {cacheInfo.sizeInMB.toFixed(2)} MB
+              {cacheInfo.lastPage}
             </div>
           </div>
           
@@ -142,13 +140,6 @@ export const CacheManager: React.FC = () => {
             <div className="font-semibold text-gray-900">
               {cacheInfo.hasCache ? formatAge(cacheInfo.age) : 'N/A'}
             </div>
-          </div>
-        </div>
-
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <div className="text-sm text-gray-600">Última Atualização</div>
-          <div className="font-semibold text-gray-900">
-            {cacheInfo.lastUpdated}
           </div>
         </div>
 
