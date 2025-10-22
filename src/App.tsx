@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Search from "./pages/Search";
 import Lists from "./pages/Lists";
 import Analytics from "./pages/Analytics";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import VimeoTest from "./pages/VimeoTest";
 import SupabaseTest from "./pages/SupabaseTest";
 import NotFound from "./pages/NotFound";
@@ -62,15 +63,20 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/analytics" element={
-                <AdminRoute>
+                <ProtectedRoute>
                   <Analytics />
-                </AdminRoute>
+                </ProtectedRoute>
               } />
               <Route path="/vimeo-test" element={<VimeoTest />} />
               <Route path="/supabase-test" element={<SupabaseTest />} />
               <Route path="/admin/users" element={
                 <AdminRoute>
                   <AdminUsers />
+                </AdminRoute>
+              } />
+              <Route path="/admin/analytics" element={
+                <AdminRoute>
+                  <AdminAnalytics />
                 </AdminRoute>
               } />
               <Route path="/settings" element={

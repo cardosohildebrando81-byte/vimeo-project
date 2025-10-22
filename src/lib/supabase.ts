@@ -86,14 +86,14 @@ export class SupabaseService {
         }
       }
 
-      // Testa a conexão fazendo uma query simples
+      // Testa a conexão fazendo uma query simples na tabela Organization
       const { error: testError } = await this.client
-        .from('_test_connection')
-        .select('*')
+        .from('Organization')
+        .select('id')
         .limit(1)
 
-      // Se não há erro ou é um erro de tabela não encontrada (esperado)
-      if (!testError || testError.code === 'PGRST116') {
+      // Se não há erro, a conexão está funcionando
+      if (!testError) {
         return {
           success: true,
           message: 'Conexão com Supabase estabelecida com sucesso!'
@@ -180,6 +180,69 @@ export class SupabaseService {
     return this.client.auth.onAuthStateChange(callback)
   }
 
+  // Garantir sincronização de registro em public.User após autenticação
+  async ensureDbUserForSession(session?: AuthSession | null): Promise<{ created: boolean; error?: Error | null }> {
+    try {
+      const syncEnabled = import.meta.env.VITE_SYNC_USER_CLIENT_SIDE === 'true'
+      if (!syncEnabled) {
+        return { created: false }
+      }
+
+      const currentSession = session ?? (await this.client.auth.getSession()).data.session
+      const authUserId = currentSession?.user?.id
+      if (!authUserId) {
+        return { created: false }
+      }
+
+      // Já existe?
+      const { data: existing, error: selectErr } = await this.client
+        .from('User')
+        .select('id')
+        .eq('authProviderId', authUserId)
+        .maybeSingle()
+
+      if (selectErr && (selectErr as any).code !== 'PGRST116') {
+        console.warn('[Supabase] Falha ao verificar public.User:', selectErr.message)
+        return { created: false, error: selectErr }
+      }
+      if (existing) {
+        return { created: false }
+      }
+
+      const defaultOrgId = import.meta.env.VITE_DEFAULT_ORGANIZATION_ID as string | undefined
+      if (!defaultOrgId) {
+        console.warn('[Supabase] VITE_DEFAULT_ORGANIZATION_ID não definido; cancelando sincronização public.User.')
+        return { created: false }
+      }
+
+      const email = currentSession.user.email || ''
+      const displayName = currentSession.user.user_metadata?.full_name || (email ? email.split('@')[0] : 'Usuário')
+
+      const payload: any = {
+        organizationId: defaultOrgId,
+        authProvider: 'SUPABASE',
+        authProviderId: authUserId,
+        email,
+        displayName,
+        role: 'CLIENT',
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      const { error: insertErr } = await this.client.from('User').insert(payload)
+      if (insertErr) {
+        console.warn('[Supabase] Falha ao inserir em public.User:', insertErr.message)
+        return { created: false, error: insertErr }
+      }
+
+      return { created: true }
+    } catch (e: any) {
+      console.warn('[Supabase] Erro inesperado na sincronização public.User:', e?.message)
+      return { created: false, error: e }
+    }
+  }
+
   // Operações de banco de dados genéricas
   async select<T>(table: string, columns = '*', filters?: object): Promise<{ data: T[] | null; error: Error | null }> {
     let query = this.client.from(table).select(columns)
@@ -240,6 +303,7 @@ export const useSupabase = () => {
     getCurrentUser: () => supabaseService.getCurrentUser(),
     getCurrentSession: () => supabaseService.getCurrentSession(),
     onAuthStateChange: (callback: (event: string, session: AuthSession | null) => void) => 
-      supabaseService.onAuthStateChange(callback)
+      supabaseService.onAuthStateChange(callback),
+    ensureDbUserForSession: (session?: AuthSession | null) => supabaseService.ensureDbUserForSession(session)
   }
 }

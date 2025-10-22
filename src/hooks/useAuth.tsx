@@ -20,7 +20,7 @@ const AuthContext = createContext<(AuthState & AuthActions) | null>(null)
 
 // Implementação interna do estado/ações de autenticação (antes era exportada diretamente)
 const useAuthInternal = (): AuthState & AuthActions => {
-  const { getCurrentUser, getCurrentSession, signIn: supabaseSignIn, signUp: supabaseSignUp, signOut: supabaseSignOut, onAuthStateChange } = useSupabase()
+  const { getCurrentUser, getCurrentSession, signIn: supabaseSignIn, signUp: supabaseSignUp, signOut: supabaseSignOut, onAuthStateChange, ensureDbUserForSession } = useSupabase()
   
   const [state, setState] = useState<AuthState>({
     user: null,
@@ -44,6 +44,11 @@ const useAuthInternal = (): AuthState & AuthActions => {
         loading: false,
         initialized: true
       }))
+
+      // Se já há sessão ativa ao carregar, garantir sincronização do registro em public.User
+      if (userResult.user && import.meta.env.VITE_SYNC_USER_CLIENT_SIDE === 'true') {
+        ensureDbUserForSession(sessionResult.session)
+      }
     } catch (error) {
       console.error('Erro ao atualizar estado de autenticação:', error)
       setState(prev => ({
@@ -54,7 +59,7 @@ const useAuthInternal = (): AuthState & AuthActions => {
         initialized: true
       }))
     }
-  }, [getCurrentUser, getCurrentSession])
+  }, [getCurrentUser, getCurrentSession, ensureDbUserForSession])
 
   // Inicializar estado de autenticação
   useEffect(() => {
@@ -73,12 +78,17 @@ const useAuthInternal = (): AuthState & AuthActions => {
         loading: false,
         initialized: true
       }))
+
+      // Após SIGNED_IN/TOKEN_REFRESHED, sincroniza registro em public.User
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && import.meta.env.VITE_SYNC_USER_CLIENT_SIDE === 'true') {
+        ensureDbUserForSession(session)
+      }
     })
 
     return () => {
       subscription?.unsubscribe()
     }
-  }, [onAuthStateChange])
+  }, [onAuthStateChange, ensureDbUserForSession])
 
   // Função de login
   const signIn = useCallback(async (email: string, password: string) => {
