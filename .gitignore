@@ -30,3 +30,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Supabase local cache (do not commit)
+supabase/.temp/

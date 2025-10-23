@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { useSupabase } from "@/lib/supabase";
+import { buildRedirectUrl } from "@/lib/url";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ const ForgotPassword = () => {
 
     try {
       const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: buildRedirectUrl(window.location.origin, '/reset-password'),
       });
 
       if (error) {

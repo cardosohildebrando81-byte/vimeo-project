@@ -7,8 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Users, Plus, Mail, Info, Shield, CheckCircle2, Lock, ListOrdered, UploadCloud, UserCog, PencilLine } from "lucide-react";
+import { Users, Plus, Mail, Info, CheckCircle2, Lock, ListOrdered, UploadCloud, UserCog, PencilLine, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -18,12 +17,25 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { User as DbUser, Role } from "@/types/database";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const roleClasses: Record<Role, string> = {
+  ADMIN: "bg-blue-100 text-blue-700",
+  MANAGER: "bg-violet-100 text-violet-700",
+  CLIENT: "bg-slate-100 text-slate-700",
+};
+
+const getInitials = (name?: string | null, email?: string | null) => {
+  const base = (name && name.trim()) || (email ? email.split("@")[0] : "U");
+  return base.slice(0, 2).toUpperCase();
+};
 
 const AdminUsers = () => {
   const { signUp, resetPassword, service, client } = useSupabase();
   const { toast } = useToast();
 
-  // Estados já existentes
+  // Estados de criação
   const [createOpen, setCreateOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [newName, setNewName] = useState("");
@@ -34,7 +46,7 @@ const AdminUsers = () => {
   const [loadingCreate, setLoadingCreate] = useState(false);
   const [loadingReset, setLoadingReset] = useState(false);
 
-  // Estados novos para lista/edição
+  // Lista/edição
   const [users, setUsers] = useState<DbUser[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
@@ -48,6 +60,12 @@ const AdminUsers = () => {
   const [editRole, setEditRole] = useState<Role>("CLIENT");
   const [editActive, setEditActive] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+
+  // UX extra: ordenação, paginação e trava de alternância
+  const [sortBy, setSortBy] = useState<"created_desc" | "name_asc">("created_desc");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
 
   const handleCreateUser = async () => {
     if (!newEmail || !newPassword) {
@@ -142,7 +160,15 @@ const AdminUsers = () => {
     try {
       setUsersLoading(true);
       setUsersError(null);
-      let query = client.from("User").select("*").order("createdAt", { ascending: false });
+      let query = client.from("User").select("*");
+
+      if (sortBy === "created_desc") {
+        query = query.order("createdAt", { ascending: false });
+      } else {
+        // name_asc
+        query = query.order("displayName", { ascending: true, nullsFirst: true });
+      }
+
       if (roleFilter !== "all") query = query.eq("role", roleFilter);
       if (activeFilter !== "all") query = query.eq("isActive", activeFilter === "active");
       const { data, error } = await query;
@@ -157,9 +183,15 @@ const AdminUsers = () => {
   };
 
   useEffect(() => {
+    // sempre volta à primeira página quando filtros/ordem mudam
+    setPage(1);
     loadUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roleFilter, activeFilter]);
+  }, [roleFilter, activeFilter, sortBy]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, pageSize]);
 
   const filteredUsers = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -168,6 +200,12 @@ const AdminUsers = () => {
       (u.email?.toLowerCase().includes(term) || u.displayName?.toLowerCase().includes(term))
     );
   }, [search, users]);
+
+  const total = filteredUsers.length;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const startIdx = (currentPage - 1) * pageSize;
+  const pageUsers = filteredUsers.slice(startIdx, startIdx + pageSize);
 
   const openEdit = (u: DbUser) => {
     setSelectedUser(u);
@@ -181,7 +219,7 @@ const AdminUsers = () => {
     if (!selectedUser) return;
     setSavingEdit(true);
     try {
-      const { data, error } = await service.update<DbUser>("User", selectedUser.id, {
+      const { error } = await service.update<DbUser>("User", selectedUser.id, {
         displayName: editName,
         role: editRole,
         isActive: editActive,
@@ -200,12 +238,27 @@ const AdminUsers = () => {
   };
 
   const toggleActive = async (u: DbUser, next: boolean) => {
+    const confirmMsg = next ? `Ativar o usuário ${u.email}?` : `Desativar o usuário ${u.email}?`;
+    const ok = window.confirm(confirmMsg);
+    if (!ok) return;
+    setTogglingIds((prev) => {
+      const c = new Set(prev);
+      c.add(u.id);
+      return c;
+    });
     try {
       const { error } = await service.update<DbUser>("User", u.id, { isActive: next, updatedAt: new Date() as any });
       if (error) throw error as any;
       setUsers((prev) => prev.map((x) => (x.id === u.id ? { ...x, isActive: next } : x)));
+      toast({ title: next ? "Usuário ativado" : "Usuário desativado", description: u.email });
     } catch (e: any) {
       toast({ title: "Erro ao atualizar status", description: e?.message || "Tente novamente.", variant: "destructive" });
+    } finally {
+      setTogglingIds((prev) => {
+        const c = new Set(prev);
+        c.delete(u.id);
+        return c;
+      });
     }
   };
 
@@ -215,7 +268,7 @@ const AdminUsers = () => {
   };
 
   return (
-    <> 
+    <>
       <div className="min-h-screen flex">
         <Sidebar />
         <div className="flex-1 flex flex-col">
@@ -231,6 +284,201 @@ const AdminUsers = () => {
                 Novo Usuário
               </Button>
             </div>
+
+            {/* Lista de usuários (agora no topo do conteúdo principal) */}
+            <Card id="users-list" className="border-border mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Users className="w-4 h-4" /> Lista de Usuários</CardTitle>
+                <CardDescription>Pesquisar, editar e ativar/desativar usuários cadastrados.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div className="grow space-y-2 min-w-[240px]">
+                    <Label htmlFor="search">Buscar</Label>
+                    <Input id="search" placeholder="Nome ou e‑mail" value={search} onChange={(e) => setSearch(e.target.value)} />
+                  </div>
+                  <div className="w-[200px] space-y-2">
+                    <Label>Papel</Label>
+                    <Select value={roleFilter === "all" ? "all" : roleFilter} onValueChange={(v) => setRoleFilter(v === "all" ? "all" : (v as Role))}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="CLIENT">Cliente</SelectItem>
+                        <SelectItem value="MANAGER">Manager</SelectItem>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-[200px] space-y-2">
+                    <Label>Status</Label>
+                    <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as any)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="active">Ativos</SelectItem>
+                        <SelectItem value="inactive">Inativos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-[220px] space-y-2">
+                    <Label>Ordenar por</Label>
+                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Mais recentes" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="created_desc">Mais recentes</SelectItem>
+                        <SelectItem value="name_asc">Nome (A–Z)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-[140px] space-y-2">
+                    <Label>Tamanho da página</Label>
+                    <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="10" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5</SelectItem>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="20">20</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button variant="outline" onClick={loadUsers} title="Atualizar lista">
+                    <RefreshCw className="w-4 h-4 mr-2" /> Atualizar
+                  </Button>
+                </div>
+
+                <div className="rounded-xl border border-border overflow-hidden">
+                  {usersLoading ? (
+                    <div className="p-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Papel</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Skeleton className="h-9 w-9 rounded-full" />
+                                  <div className="space-y-2 w-48">
+                                    <Skeleton className="h-4 w-36" />
+                                    <Skeleton className="h-3 w-24" />
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell><Skeleton className="h-4 w-56" /></TableCell>
+                              <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                              <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                              <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : usersError ? (
+                    <div className="p-6">
+                      <Alert className="border-destructive/30">
+                        <AlertDescription>
+                          Erro ao carregar usuários: {usersError}
+                          <div className="mt-3">
+                            <Button size="sm" variant="outline" onClick={loadUsers}><RefreshCw className="w-4 h-4 mr-2" />Tentar novamente</Button>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                    </div>
+                  ) : total === 0 ? (
+                    <div className="p-10 flex flex-col items-center justify-center text-center gap-3">
+                      <Users className="w-10 h-10 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">Nenhum usuário encontrado.</p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" onClick={() => { setSearch(""); setRoleFilter("all"); setActiveFilter("all"); }}>
+                          Limpar filtros
+                        </Button>
+                        <Button className="gradient-primary" onClick={() => setCreateOpen(true)}>
+                          <Plus className="w-4 h-4 mr-2" /> Novo Usuário
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Papel</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pageUsers.map((u) => (
+                            <TableRow key={u.id}>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-9 w-9">
+                                    <AvatarFallback>{getInitials(u.displayName, u.email)}</AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{u.displayName || "—"}</span>
+                                    <span className="text-xs text-muted-foreground">ID: {u.id.slice(0, 8)}…</span>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>{u.email}</TableCell>
+                              <TableCell>
+                                <Badge variant="secondary" className={`uppercase ${roleClasses[u.role]}`}>{u.role}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Switch checked={!!u.isActive} disabled={togglingIds.has(u.id)} onCheckedChange={(checked) => toggleActive(u, !!checked)} />
+                                  <span className={u.isActive ? "text-green-600" : "text-muted-foreground"}>{u.isActive ? "Ativo" : "Inativo"}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button size="sm" variant="ghost" onClick={() => openEdit(u)} title="Editar">
+                                  <PencilLine className="w-4 h-4" />
+                                  <span className="sr-only">Editar</span>
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                        <TableCaption>
+                          Mostrando {startIdx + 1}–{Math.min(startIdx + pageSize, total)} de {total} usuários
+                        </TableCaption>
+                      </Table>
+
+                      {/* Paginação */}
+                      <div className="flex items-center justify-between px-4 py-3 border-t bg-muted/30">
+                        <span className="text-sm text-muted-foreground">Página {currentPage} de {pageCount}</span>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage <= 1}>
+                            <ChevronLeft className="w-4 h-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(pageCount, p + 1))} disabled={currentPage >= pageCount}>
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Reset de senha */}
@@ -252,7 +500,7 @@ const AdminUsers = () => {
                 </CardContent>
               </Card>
 
-              {/* Informações / Guia aprimorado */}
+              {/* Informações / Guia */}
               <Card className="border-border">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2"><Users className="w-4 h-4" /> Guia de gerenciamento de usuários</CardTitle>
@@ -346,7 +594,7 @@ const AdminUsers = () => {
                 <Input id="new-name" type="text" placeholder="Nome completo" value={newName} onChange={(e) => setNewName(e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-pass">Senha inicial</Label>
+                <Label htmlFor="new-pass">Senha inicial (opcional)</Label>
                 <Input id="new-pass" type="password" placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -371,97 +619,6 @@ const AdminUsers = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Lista de usuários */}
-        <Card id="users-list" className="border-border mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Users className="w-4 h-4" /> Lista de Usuários</CardTitle>
-            <CardDescription>Pesquisar, editar e ativar/desativar usuários cadastrados.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-wrap gap-3 items-end">
-              <div className="grow space-y-2 min-w-[240px]">
-                <Label htmlFor="search">Buscar</Label>
-                <Input id="search" placeholder="Nome ou e‑mail" value={search} onChange={(e) => setSearch(e.target.value)} />
-              </div>
-              <div className="w-[200px] space-y-2">
-                <Label>Papel</Label>
-                <Select value={roleFilter === "all" ? "all" : roleFilter} onValueChange={(v) => setRoleFilter(v === "all" ? "all" : (v as Role))}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="CLIENT">Cliente</SelectItem>
-                    <SelectItem value="MANAGER">Manager</SelectItem>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-[200px] space-y-2">
-                <Label>Status</Label>
-                <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as any)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="active">Ativos</SelectItem>
-                    <SelectItem value="inactive">Inativos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button variant="outline" onClick={loadUsers}>
-                Atualizar
-              </Button>
-            </div>
-
-            <div className="rounded-xl border border-border overflow-hidden">
-              {usersLoading ? (
-                <div className="p-6 text-muted-foreground">Carregando usuários...</div>
-              ) : usersError ? (
-                <div className="p-6 text-destructive">Erro: {usersError}</div>
-              ) : filteredUsers.length === 0 ? (
-                <div className="p-6 text-muted-foreground">Nenhum usuário encontrado</div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Papel</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.map((u) => (
-                      <TableRow key={u.id}>
-                        <TableCell className="font-medium">{u.displayName}</TableCell>
-                        <TableCell>{u.email}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="uppercase">{u.role}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Switch checked={!!u.isActive} onCheckedChange={(checked) => toggleActive(u, !!checked)} />
-                            <span className={u.isActive ? "text-green-600" : "text-muted-foreground"}>{u.isActive ? "Ativo" : "Inativo"}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button size="sm" variant="ghost" onClick={() => openEdit(u)} title="Editar">
-                            <PencilLine className="w-4 h-4" />
-                            <span className="sr-only">Editar</span>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                  <TableCaption>Mostrando {filteredUsers.length} de {users.length} usuários</TableCaption>
-                </Table>
-              )}
-            </div>
-          </CardContent>
-        </Card>
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
