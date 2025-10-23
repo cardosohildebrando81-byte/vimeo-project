@@ -19,11 +19,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useMemo, useState } from "react";
+import { useRole } from "@/hooks/useRole";
 
 const Sidebar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, signOut, initialized } = useAuth();
+  const { isAdmin } = useRole();
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try {
@@ -37,13 +39,7 @@ const Sidebar = () => {
     try { localStorage.setItem("sidebar:collapsed", String(collapsed)); } catch {}
   }, [collapsed]);
 
-  const isAdmin = useMemo(() => {
-    const md = (user?.user_metadata as any) || {};
-    const role = (md?.role || md?.user_role || md?.profile_role || "").toString().toLowerCase();
-    const flags = [md?.is_admin, md?.admin, md?.isAdmin];
-    return !!user && (role === "admin" || flags.some((v: any) => v === true));
-  }, [user]);
-
+  // Removed old heuristic; use hook-derived isAdmin
   const isActive = (to: string) => {
     if (to === "/dashboard") {
       return pathname.startsWith("/dashboard");

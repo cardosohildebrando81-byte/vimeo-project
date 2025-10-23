@@ -1,6 +1,7 @@
-import { ReactNode, useEffect, useMemo } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { Loader2 } from 'lucide-react';
 
 interface AdminRouteProps {
@@ -8,18 +9,15 @@ interface AdminRouteProps {
 }
 
 const AdminRoute = ({ children }: AdminRouteProps) => {
-  const { user, loading, initialized } = useAuth();
+  const { user, loading: authLoading, initialized: authInitialized } = useAuth();
+  const { isAdmin, loading: roleLoading, initialized: roleInitialized } = useRole();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAdmin = useMemo(() => {
-    const md = (user?.user_metadata as any) || {};
-    const role = (md?.role || md?.user_role || md?.profile_role || '').toString().toLowerCase();
-    const flags = [md?.is_admin, md?.admin, md?.isAdmin];
-    return !!user && (role === 'admin' || flags.some((v: any) => v === true));
-  }, [user]);
-
   useEffect(() => {
+    const initialized = authInitialized && roleInitialized;
+    const loading = authLoading || roleLoading;
+
     if (initialized && !loading) {
       if (!user) {
         navigate('/login', { state: { from: location }, replace: true });
@@ -27,7 +25,10 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
         navigate('/dashboard', { replace: true });
       }
     }
-  }, [user, loading, initialized, isAdmin, navigate, location]);
+  }, [user, authLoading, roleLoading, authInitialized, roleInitialized, isAdmin, navigate, location]);
+
+  const initialized = authInitialized && roleInitialized;
+  const loading = authLoading || roleLoading;
 
   if (!initialized || loading) {
     return (

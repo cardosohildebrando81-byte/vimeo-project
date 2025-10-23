@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { buildRedirectUrl, cleanUrl } from './url'
 
 // Configurações do Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -127,24 +128,37 @@ export class SupabaseService {
     // Usa URL de produção se disponível; se apontar para localhost, prefere o domínio atual
     const envUrl = import.meta.env.VITE_APP_URL;
     const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
-    const redirectBase = envUrl && !envUrl.includes('localhost') ? envUrl : (origin || envUrl);
-
+    const baseCandidate = envUrl && !envUrl.includes('localhost') ? envUrl : (origin || envUrl);
+    const emailRedirectTo = buildRedirectUrl(baseCandidate, '/reset-password');
+  
     const { data, error } = await this.client.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: `${redirectBase}/reset-password`
+        emailRedirectTo
       }
     })
+  
+    // Após signUp bem-sucedido, tenta garantir o registro em public.User
+    // Observação: se a confirmação por email estiver habilitada, pode não haver sessão imediatamente
+    // Nesse caso, ensureDbUserForSession irá simplesmente retornar sem criar.
+    if (!error) {
+      try {
+        await this.ensureDbUserForSession(data?.session ?? null)
+      } catch (e) {
+        console.warn('[Supabase] ensureDbUserForSession após signUp falhou:', (e as any)?.message)
+      }
+    }
 
     return { data, error }
   }
 
   // Enviar email de redefinição de senha
   async resetPassword(email: string, redirectTo?: string): Promise<{ error: Error | null }> {
+    const resolvedRedirect = redirectTo ? cleanUrl(redirectTo) : buildRedirectUrl(import.meta.env.VITE_APP_URL, '/reset-password')
     const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo,
+      redirectTo: resolvedRedirect,
     })
     return { error }
   }
