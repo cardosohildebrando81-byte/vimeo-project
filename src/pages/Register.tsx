@@ -46,28 +46,31 @@ const Register = () => {
       });
 
       if (result.success) {
-        // Sincronização opcional com tabela public.User
-        const defaultOrgId = import.meta.env.VITE_DEFAULT_ORGANIZATION_ID as string | undefined;
-        const authUserId = result.user?.id;
-        if (authUserId) {
-          const payload: Partial<DbUser> = {
-            organizationId: (defaultOrgId ?? undefined) as any,
-            authProvider: "SUPABASE",
-            authProviderId: authUserId,
-            email: formData.email,
-            displayName: formData.name || formData.email.split("@")[0],
-            role: "CLIENT",
-            isActive: false,
-            createdAt: new Date() as any,
-            updatedAt: new Date() as any,
-          };
-          try {
-            const { error: insertError } = await service.insert<DbUser>("User", payload);
-            if (insertError) {
-              console.warn("[Register] Falha ao inserir em public.User:", insertError.message);
+        // Sincronização opcional com tabela public.User (controlada por flag)
+        const shouldSyncClient = import.meta.env.VITE_SYNC_USER_CLIENT_SIDE === "true";
+        if (shouldSyncClient) {
+          const defaultOrgId = import.meta.env.VITE_DEFAULT_ORGANIZATION_ID as string | undefined;
+          const authUserId = result.user?.id;
+          if (authUserId) {
+            const payload: Partial<DbUser> = {
+              organizationId: (defaultOrgId ?? undefined) as any,
+              authProvider: "SUPABASE",
+              authProviderId: authUserId,
+              email: formData.email,
+              displayName: formData.name || formData.email.split("@")[0],
+              role: "CLIENT",
+              isActive: false,
+              createdAt: new Date() as any,
+              updatedAt: new Date() as any,
+            };
+            try {
+              const { error: insertError } = await service.insert<DbUser>("User", payload);
+              if (insertError) {
+                console.warn("[Register] Falha ao inserir em public.User:", insertError.message);
+              }
+            } catch (err: any) {
+              console.warn("[Register] Erro ao sincronizar public.User:", err?.message);
             }
-          } catch (err: any) {
-            console.warn("[Register] Erro ao sincronizar public.User:", err?.message);
           }
         }
 

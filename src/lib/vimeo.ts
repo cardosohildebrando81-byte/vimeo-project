@@ -54,6 +54,12 @@ class VimeoService {
   private api: AxiosInstance;
   private accessToken: string;
 
+  // Feature flags/limites controlados por env para evitar travamentos
+  private readonly fallbackEnabled: boolean;
+  private readonly maxPages: number;
+  private readonly batchSize: number;
+  private readonly videosPerRequest: number;
+
   constructor() {
     this.accessToken = import.meta.env.VITE_VIMEO_ACCESS_TOKEN || '';
     this.api = axios.create({
@@ -63,6 +69,13 @@ class VimeoService {
         'Content-Type': 'application/json'
       }
     });
+
+    // Flags/limites (valores seguros por padrão)
+    // Para reativar o fallback pesado, defina VITE_VIMEO_FALLBACK_ENABLED=true
+    this.fallbackEnabled = (import.meta.env.VITE_VIMEO_FALLBACK_ENABLED || 'false') !== 'false';
+    this.maxPages = Number(import.meta.env.VITE_VIMEO_MAX_PAGES || 8); // antes era 50
+    this.batchSize = Number(import.meta.env.VITE_VIMEO_BATCH_SIZE || 1); // antes 2
+    this.videosPerRequest = Number(import.meta.env.VITE_VIMEO_VIDEOS_PER_REQUEST || 50); // antes 100
 
     // Interceptor para tratar erros globais
     this.api.interceptors.response.use(
@@ -172,9 +185,25 @@ class VimeoService {
         return data;
       }
 
-      console.log('ℹ️ Nenhum resultado direto da API. Ativando fallback para cache/index local...');
+      console.log('ℹ️ Nenhum resultado direto da API.');
+      if (!this.fallbackEnabled) {
+        // Retorna vazio de forma rápida para não travar a UI
+        return {
+          total: 0,
+          page,
+          per_page: perPage,
+          paging: { next: null, previous: null, first: '', last: '' },
+          data: []
+        };
+      }
+      console.log('Ativando fallback para cache/index local...');
     } catch (error: any) {
-      console.warn('⚠️ Falha na busca direta da API Vimeo, usando fallback local:', error?.message || error);
+      console.warn('⚠️ Falha na busca direta da API Vimeo', error?.message || error);
+      if (!this.fallbackEnabled) {
+        // Não fazer fallback pesado quando desabilitado
+        throw new Error(error?.message || 'Falha ao buscar na API do Vimeo');
+      }
+      console.log('Usando fallback local por estar habilitado.');
     }
 
     // Fallback: busca local com cache e carregamento incremental
@@ -265,14 +294,14 @@ class VimeoService {
     
     let currentPage = startPage;
     let hasMorePages = true;
-    const videosPerRequest = 100; // Máximo permitido pela API
-    const batchSize = 2; // Reduzir para 2 páginas por vez
+    const videosPerRequest = this.videosPerRequest; // Máximo permitido pela API (ajustável)
+    const batchSize = this.batchSize; // Reduzido via env
     let consecutiveEmptyPages = 0;
     const maxConsecutiveEmptyPages = 2; // Reduzir para 2 páginas vazias
-    const maxPages = 50; // Limite de segurança para evitar loop infinito
+    const maxPages = this.maxPages; // Limite de segurança para evitar loop infinito
     let latestTotalFromApi = 0; // manter o total reportado pela API
     
-    console.log(`📥 Carregando vídeos incrementalmente a partir da página ${startPage}...`);
+    console.log(`📥 Carregando vídeos incrementalmente a partir da página ${startPage}... (até ${maxPages} páginas, batch=${batchSize}, per_page=${videosPerRequest})`);
     
     while (hasMorePages && consecutiveEmptyPages < maxConsecutiveEmptyPages && currentPage <= maxPages) {
       const batchVideos: VimeoVideo[] = [];
@@ -353,7 +382,10 @@ class VimeoService {
                         !batchHasData;
       
       // Salvar progresso no cache (usar total reportado pela API quando disponível)
-      VideoCache.appendVideos(allVideos, latestTotalFromApi || allVideos.length, currentPage - 1, isComplete);
+      // Importante: salvar apenas o batch atual para evitar cópias gigantes em cada iteração
+      if (batchVideos.length > 0) {
+        VideoCache.appendVideos(batchVideos, latestTotalFromApi || allVideos.length, currentPage - 1, isComplete);
+      }
       
       if (isComplete) {
         console.log(`✅ Carregamento incremental concluído. Motivo: hasMorePages=${hasMorePages}, emptyPages=${consecutiveEmptyPages}, maxPages=${currentPage > maxPages}, noData=${!batchHasData}`);
@@ -361,8 +393,8 @@ class VimeoService {
         break;
       }
       
-      // Pausa pequena entre batches para evitar rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Pausa pequena entre batches para evitar rate limiting e dar respiro ao main thread
+      await new Promise(resolve => setTimeout(resolve, 150));
     }
     
     return allVideos;

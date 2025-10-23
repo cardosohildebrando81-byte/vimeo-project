@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { buildRedirectUrl, cleanUrl } from './url'
 
 // Configurações do Supabase
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -86,14 +87,14 @@ export class SupabaseService {
         }
       }
 
-      // Testa a conexão fazendo uma query simples
+      // Testa a conexão fazendo uma query simples na tabela Organization
       const { error: testError } = await this.client
-        .from('_test_connection')
-        .select('*')
+        .from('Organization')
+        .select('id')
         .limit(1)
 
-      // Se não há erro ou é um erro de tabela não encontrada (esperado)
-      if (!testError || testError.code === 'PGRST116') {
+      // Se não há erro, a conexão está funcionando
+      if (!testError) {
         return {
           success: true,
           message: 'Conexão com Supabase estabelecida com sucesso!'
@@ -127,24 +128,37 @@ export class SupabaseService {
     // Usa URL de produção se disponível; se apontar para localhost, prefere o domínio atual
     const envUrl = import.meta.env.VITE_APP_URL;
     const origin = typeof window !== 'undefined' ? window.location.origin : undefined;
-    const redirectBase = envUrl && !envUrl.includes('localhost') ? envUrl : (origin || envUrl);
-
+    const baseCandidate = envUrl && !envUrl.includes('localhost') ? envUrl : (origin || envUrl);
+    const emailRedirectTo = buildRedirectUrl(baseCandidate, '/reset-password');
+  
     const { data, error } = await this.client.auth.signUp({
       email,
       password,
       options: {
         data: metadata,
-        emailRedirectTo: `${redirectBase}/reset-password`
+        emailRedirectTo
       }
     })
+  
+    // Após signUp bem-sucedido, tenta garantir o registro em public.User
+    // Observação: se a confirmação por email estiver habilitada, pode não haver sessão imediatamente
+    // Nesse caso, ensureDbUserForSession irá simplesmente retornar sem criar.
+    if (!error) {
+      try {
+        await this.ensureDbUserForSession(data?.session ?? null)
+      } catch (e) {
+        console.warn('[Supabase] ensureDbUserForSession após signUp falhou:', (e as any)?.message)
+      }
+    }
 
     return { data, error }
   }
 
   // Enviar email de redefinição de senha
   async resetPassword(email: string, redirectTo?: string): Promise<{ error: Error | null }> {
+    const resolvedRedirect = redirectTo ? cleanUrl(redirectTo) : buildRedirectUrl(import.meta.env.VITE_APP_URL, '/reset-password')
     const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo,
+      redirectTo: resolvedRedirect,
     })
     return { error }
   }
@@ -178,6 +192,69 @@ export class SupabaseService {
   // Escutar mudanças de autenticação
   onAuthStateChange(callback: (event: string, session: AuthSession | null) => void) {
     return this.client.auth.onAuthStateChange(callback)
+  }
+
+  // Garantir sincronização de registro em public.User após autenticação
+  async ensureDbUserForSession(session?: AuthSession | null): Promise<{ created: boolean; error?: Error | null }> {
+    try {
+      const syncEnabled = import.meta.env.VITE_SYNC_USER_CLIENT_SIDE === 'true'
+      if (!syncEnabled) {
+        return { created: false }
+      }
+
+      const currentSession = session ?? (await this.client.auth.getSession()).data.session
+      const authUserId = currentSession?.user?.id
+      if (!authUserId) {
+        return { created: false }
+      }
+
+      // Já existe?
+      const { data: existing, error: selectErr } = await this.client
+        .from('User')
+        .select('id')
+        .eq('authProviderId', authUserId)
+        .maybeSingle()
+
+      if (selectErr && (selectErr as any).code !== 'PGRST116') {
+        console.warn('[Supabase] Falha ao verificar public.User:', selectErr.message)
+        return { created: false, error: selectErr }
+      }
+      if (existing) {
+        return { created: false }
+      }
+
+      const defaultOrgId = import.meta.env.VITE_DEFAULT_ORGANIZATION_ID as string | undefined
+      if (!defaultOrgId) {
+        console.warn('[Supabase] VITE_DEFAULT_ORGANIZATION_ID não definido; cancelando sincronização public.User.')
+        return { created: false }
+      }
+
+      const email = currentSession.user.email || ''
+      const displayName = currentSession.user.user_metadata?.full_name || (email ? email.split('@')[0] : 'Usuário')
+
+      const payload: any = {
+        organizationId: defaultOrgId,
+        authProvider: 'SUPABASE',
+        authProviderId: authUserId,
+        email,
+        displayName,
+        role: 'CLIENT',
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }
+
+      const { error: insertErr } = await this.client.from('User').insert(payload)
+      if (insertErr) {
+        console.warn('[Supabase] Falha ao inserir em public.User:', insertErr.message)
+        return { created: false, error: insertErr }
+      }
+
+      return { created: true }
+    } catch (e: any) {
+      console.warn('[Supabase] Erro inesperado na sincronização public.User:', e?.message)
+      return { created: false, error: e }
+    }
   }
 
   // Operações de banco de dados genéricas
@@ -240,6 +317,7 @@ export const useSupabase = () => {
     getCurrentUser: () => supabaseService.getCurrentUser(),
     getCurrentSession: () => supabaseService.getCurrentSession(),
     onAuthStateChange: (callback: (event: string, session: AuthSession | null) => void) => 
-      supabaseService.onAuthStateChange(callback)
+      supabaseService.onAuthStateChange(callback),
+    ensureDbUserForSession: (session?: AuthSession | null) => supabaseService.ensureDbUserForSession(session)
   }
 }

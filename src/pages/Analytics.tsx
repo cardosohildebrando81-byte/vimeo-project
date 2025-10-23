@@ -141,9 +141,9 @@ const Analytics = () => {
             {/* Header */}
             <div className="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold mb-2">Analytics</h1>
+                <h1 className="text-4xl font-bold mb-2">Meus Relatórios</h1>
                 <p className="text-lg text-muted-foreground">
-                  Acompanhe métricas reais do seu uso na plataforma
+                  Visualize suas estatísticas e métricas pessoais
                 </p>
               </div>
               <div className="flex items-center gap-2">

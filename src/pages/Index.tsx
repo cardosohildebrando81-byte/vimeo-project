@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import heroImage from "@/assets/hero-medical.jpg";
+import thumb1 from "@/assets/thumb-01.jpg";
 
 const Index = () => {
   const features = [
@@ -115,13 +115,17 @@ const Index = () => {
               </div>
             </div>
 
+            {/* Imagem Hero */}
             <div className="relative animate-slide-up">
               <div className="absolute inset-0 gradient-hero opacity-20 blur-3xl rounded-full" />
-              <img
-                src={heroImage}
-                alt="Sistema TV Doutor"
-                className="relative rounded-2xl shadow-2xl hover-lift w-full"
-              />
+              <div className="relative w-full">
+                <img
+                  src={thumb1}
+                  alt="Conteúdo educativo"
+                  className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
+                  loading="lazy"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -196,45 +200,33 @@ const Index = () => {
             <div className="space-y-2">
               <div className="text-4xl font-bold text-primary">8.000+</div>
               <div className="text-lg font-medium">Vídeos Disponíveis</div>
-              <div className="text-muted-foreground">Acervo completo de conteúdo médico</div>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-primary">50+</div>
+              <div className="text-4xl font-bold text-primary">120+</div>
               <div className="text-lg font-medium">Especialidades</div>
-              <div className="text-muted-foreground">Cobertura ampla de áreas médicas</div>
             </div>
             <div className="space-y-2">
-              <div className="text-4xl font-bold text-primary">100%</div>
-              <div className="text-lg font-medium">Personalização</div>
-              <div className="text-muted-foreground">Playlists sob medida para cada cliente</div>
+              <div className="text-4xl font-bold text-primary">10+</div>
+              <div className="text-lg font-medium">Anos de Conteúdo</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center space-y-8">
-            <h2 className="text-4xl lg:text-5xl font-bold text-black">
-              Pronto para criar playlists incríveis?
-            </h2>
-            <p className="text-xl text-gray-600">
-              Acesse o sistema e comece a criar conteúdo personalizado para seus clientes
+          <div className="bg-secondary rounded-2xl p-8 md:p-12 text-center space-y-6">
+            <h2 className="text-3xl md:text-4xl font-bold">Pronto para começar?</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Entre no sistema e crie playlists inteligentes para seus clientes com poucos cliques.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/login">
-                <Button size="lg" className="bg-primary text-white hover:bg-primary/90">
-                  Fazer Login
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button size="lg" variant="outline" className="border-gray-300 text-black hover:bg-gray-50">
-                  Ver Dashboard
-                </Button>
-              </Link>
-            </div>
+            <Link to="/login">
+              <Button size="lg" className="gradient-primary shadow-primary">
+                Acessar Sistema
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

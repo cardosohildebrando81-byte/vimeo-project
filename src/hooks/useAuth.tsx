@@ -1,212 +1,149 @@
-import { useState, useEffect, useCallback, createContext, useContext } from 'react'
-import { useSupabase, AuthUser, AuthSession } from '../lib/supabase'
+import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import { useSupabase, AuthUser, AuthSession } from '@/lib/supabase';
 
 interface AuthState {
-  user: AuthUser | null
-  session: AuthSession | null
-  loading: boolean
-  initialized: boolean
+  user: AuthUser | null;
+  session: AuthSession | null;
+  loading: boolean;
+  initialized: boolean;
 }
 
 interface AuthActions {
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signUp: (email: string, password: string, metadata?: object) => Promise<{ success: boolean; error?: string; user?: AuthUser | null }>
-  signOut: () => Promise<{ success: boolean; error?: string }>
-  refreshSession: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password: string, metadata?: object) => Promise<{ success: boolean; error?: string; user?: AuthUser | null }>;
+  signOut: () => Promise<{ success: boolean; error?: string }>;
+  refreshSession: () => Promise<void>;
 }
 
-// Contexto global de autenticação para garantir um único estado compartilhado em toda a aplicação
-const AuthContext = createContext<(AuthState & AuthActions) | null>(null)
+const AuthContext = createContext<(AuthState & AuthActions) | null>(null);
 
-// Implementação interna do estado/ações de autenticação (antes era exportada diretamente)
 const useAuthInternal = (): AuthState & AuthActions => {
-  const { getCurrentUser, getCurrentSession, signIn: supabaseSignIn, signUp: supabaseSignUp, signOut: supabaseSignOut, onAuthStateChange } = useSupabase()
-  
+  const { 
+    getCurrentUser,
+    getCurrentSession,
+    signIn: supabaseSignIn,
+    signUp: supabaseSignUp,
+    signOut: supabaseSignOut,
+    onAuthStateChange,
+    ensureDbUserForSession
+  } = useSupabase();
+
   const [state, setState] = useState<AuthState>({
     user: null,
     session: null,
     loading: true,
     initialized: false
-  })
+  });
 
-  // Função para atualizar o estado do usuário
   const updateAuthState = useCallback(async () => {
     try {
       const [userResult, sessionResult] = await Promise.all([
         getCurrentUser(),
         getCurrentSession()
-      ])
+      ]);
 
-      setState(prev => ({
-        ...prev,
-        user: userResult.user,
+      // 🧠 Prioriza sempre o user da sessão (contém app_metadata completo)
+      const supabaseUser = sessionResult.session?.user ?? userResult.user ?? null;
+
+      setState({
+        user: supabaseUser,
         session: sessionResult.session,
         loading: false,
-        initialized: true
-      }))
+        initialized: !!supabaseUser
+      });
+
+      // Sincroniza user no DB, se ativado
+      if (supabaseUser && import.meta.env.VITE_SYNC_USER_CLIENT_SIDE === 'true') {
+        ensureDbUserForSession(sessionResult.session);
+      }
     } catch (error) {
-      console.error('Erro ao atualizar estado de autenticação:', error)
-      setState(prev => ({
-        ...prev,
+      console.error('[Auth] Falha ao atualizar estado:', error);
+      setState({
         user: null,
         session: null,
         loading: false,
         initialized: true
-      }))
+      });
     }
-  }, [getCurrentUser, getCurrentSession])
+  }, [getCurrentUser, getCurrentSession, ensureDbUserForSession]);
 
-  // Inicializar estado de autenticação
+  // 🔁 Atualiza ao iniciar
   useEffect(() => {
-    updateAuthState()
-  }, [updateAuthState])
+    updateAuthState();
+  }, [updateAuthState]);
 
-  // Escutar mudanças de autenticação
+  // 🔄 Listener de eventos (login/logout/refresh)
   useEffect(() => {
     const { data: { subscription } } = onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session)
-      
-      setState(prev => ({
-        ...prev,
-        user: (session?.user as AuthUser) || null,
-        session: (session as AuthSession) || null,
+      console.log('[Auth] State change:', event);
+      const sessionUser = session?.user ?? null;
+
+      setState({
+        user: sessionUser,
+        session: session ?? null,
         loading: false,
         initialized: true
-      }))
-    })
+      });
 
-    return () => {
-      subscription?.unsubscribe()
-    }
-  }, [onAuthStateChange])
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && import.meta.env.VITE_SYNC_USER_CLIENT_SIDE === 'true') {
+        ensureDbUserForSession(session);
+      }
+    });
 
-  // Função de login
+    return () => subscription?.unsubscribe();
+  }, [onAuthStateChange, ensureDbUserForSession]);
+
+  // 🔐 Ações
   const signIn = useCallback(async (email: string, password: string) => {
-    setState(prev => ({ ...prev, loading: true }))
-    
-    try {
-      const { data, error } = await supabaseSignIn(email, password)
-      
-      if (error) {
-        setState(prev => ({ ...prev, loading: false }))
-        return { 
-          success: false, 
-          error: error.message || 'Erro ao fazer login' 
-        }
-      }
-
-      // O estado será atualizado automaticamente pelo listener
-      return { success: true }
-    } catch (error) {
-      setState(prev => ({ ...prev, loading: false }))
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erro inesperado' 
-      }
+    setState((s) => ({ ...s, loading: true }));
+    const { error } = await supabaseSignIn(email, password);
+    if (error) {
+      setState((s) => ({ ...s, loading: false }));
+      return { success: false, error: error.message };
     }
-  }, [supabaseSignIn])
+    return { success: true };
+  }, [supabaseSignIn]);
 
-  // Função de registro
   const signUp = useCallback(async (email: string, password: string, metadata?: object) => {
-    setState(prev => ({ ...prev, loading: true }))
-    
-    try {
-      const { data, error } = await supabaseSignUp(email, password, metadata)
-      
-      if (error) {
-        setState(prev => ({ ...prev, loading: false }))
-        return { 
-          success: false, 
-          error: error.message || 'Erro ao criar conta' 
-        }
-      }
-
-      // O estado será atualizado automaticamente pelo listener
-      return { success: true, user: (data?.user as AuthUser) ?? null }
-    } catch (error) {
-      setState(prev => ({ ...prev, loading: false }))
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erro inesperado' 
-      }
+    setState((s) => ({ ...s, loading: true }));
+    const { data, error } = await supabaseSignUp(email, password, metadata);
+    if (error) {
+      setState((s) => ({ ...s, loading: false }));
+      return { success: false, error: error.message };
     }
-  }, [supabaseSignUp])
+    return { success: true, user: data?.user ?? null };
+  }, [supabaseSignUp]);
 
-  // Função de logout
   const signOut = useCallback(async () => {
-    setState(prev => ({ ...prev, loading: true }))
-    
-    try {
-      const { error } = await supabaseSignOut()
-      
-      if (error) {
-        setState(prev => ({ ...prev, loading: false }))
-        return { 
-          success: false, 
-          error: error.message || 'Erro ao fazer logout' 
-        }
-      }
+    setState((s) => ({ ...s, loading: true }));
+    const { error } = await supabaseSignOut();
+    setState((s) => ({ ...s, loading: false }));
+    return { success: !error, error: error?.message };
+  }, [supabaseSignOut]);
 
-      // O estado será atualizado automaticamente pelo listener
-      return { success: true }
-    } catch (error) {
-      setState(prev => ({ ...prev, loading: false }))
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Erro inesperado' 
-      }
-    }
-  }, [supabaseSignOut])
-
-  // Função para atualizar sessão
   const refreshSession = useCallback(async () => {
-    await updateAuthState()
-  }, [updateAuthState])
+    await updateAuthState();
+  }, [updateAuthState]);
 
-  return {
-    ...state,
-    signIn,
-    signUp,
-    signOut,
-    refreshSession
-  }
-}
+  return { ...state, signIn, signUp, signOut, refreshSession };
+};
 
-// Provider global de autenticação
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useAuthInternal()
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>
-}
+  const auth = useAuthInternal();
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+};
 
-// Hook público que consome o contexto; se não houver Provider, cai no modo local
 export const useAuth = (): AuthState & AuthActions => {
-  const ctx = useContext(AuthContext)
-  return ctx ?? useAuthInternal()
-}
+  const ctx = useContext(AuthContext);
+  return ctx ?? useAuthInternal();
+};
 
-// Hook para verificar se o usuário está autenticado
-export const useRequireAuth = () => {
-  const auth = useAuth()
-  
-  useEffect(() => {
-    if (auth.initialized && !auth.loading && !auth.user) {
-      // Redirecionar para login se não estiver autenticado
-      console.warn('Usuário não autenticado')
-    }
-  }, [auth.initialized, auth.loading, auth.user])
-
-  return auth
-}
-
-// Hook para dados do usuário com loading state
+// Conveniência: hook que retorna dados mais simples de consumo em componentes de teste
 export const useUser = () => {
-  const { user, loading, initialized } = useAuth()
-  
+  const { user, loading } = useAuth();
   return {
     user,
-    loading,
-    initialized,
     isAuthenticated: !!user,
-    isLoading: loading || !initialized
-  }
-}
+    isLoading: loading,
+  } as const;
+};

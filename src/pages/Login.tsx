@@ -116,7 +116,7 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="w-full gradient-primary shadow-primary"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-lg"
                 disabled={isLoading || authLoading}
               >
                 {isLoading || authLoading ? "Entrando..." : "Entrar"}
