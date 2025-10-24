@@ -101,8 +101,19 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Botão do menu mobile */}
-          <div className="md:hidden">
+          {/* CTA e botão do menu mobile */}
+          <div className="md:hidden flex items-center gap-2">
+            {/* CTA visível no mobile */}
+            {user ? (
+              <Button size="sm" variant="outline" onClick={handleSignOut}>Sair</Button>
+            ) : (
+              SHOW_LOGIN_CTA && (
+                <Link to="/login" aria-label="Acessar sistema">
+                  <Button size="sm" className="gradient-primary shadow-primary">Acessar</Button>
+                </Link>
+              )
+            )}
+            {/* Botão do menu mobile */}
             <button
               ref={buttonRef}
               type="button"

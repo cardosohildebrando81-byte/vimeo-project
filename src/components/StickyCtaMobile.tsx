@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 const StickyCtaMobile = () => {
   const { pathname } = useLocation();
   const [hidden, setHidden] = useState(false);
-  const SHOW_STICKY_CTA = false; // Ocultar CTA fixa temporariamente
+  const SHOW_STICKY_CTA = true; // Exibir CTA fixa em mobile
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -52,9 +52,9 @@ const StickyCtaMobile = () => {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto max-w-screen-md px-4 pb-4">
-        <Link to="/login" aria-label="Solicitar demo do sistema">
+        <Link to="/login" aria-label="Acessar sistema">
           <button className="w-full h-12 rounded-full gradient-primary shadow-primary border border-white/30 text-white font-medium flex items-center justify-center gap-2 transition-base">
-            Solicitar demo
+            Acessar Sistema
             <ArrowRight className="w-5 h-5" />
           </button>
         </Link>

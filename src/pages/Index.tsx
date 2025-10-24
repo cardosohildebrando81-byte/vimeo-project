@@ -15,6 +15,8 @@ import thumb04 from "@/assets/thumb-04.jpg";
 import thumb06 from "@/assets/thumb-06.jpg";
 import thumb07 from "@/assets/thumb-07.jpg";
 import thumb08 from "@/assets/thumb-08.jpg";
+import { useIsMobile } from "@/hooks/use-mobile";
+import StickyCtaMobile from "@/components/StickyCtaMobile";
 
 const Index = () => {
   const features = [
@@ -77,6 +79,7 @@ const Index = () => {
   const heroVideoId = 1123837779;
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const SHOW_PAGE_CTA = true; // Restaurar CTAs na página
+  const isMobile = useIsMobile();
 
   // Reinicia o vídeo ao terminar e evita telas de recomendação
   useEffect(() => {
@@ -114,6 +117,9 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main id="main-content" tabIndex={-1} className="flex-1">
+
+      {/* CTA fixa para mobile */}
+      <StickyCtaMobile />
 
       {/* Hero Section */}
       <section id="inicio" className="relative pt-20 pb-32 overflow-hidden scroll-mt-24">
@@ -177,7 +183,7 @@ const Index = () => {
                           src={src}
                           alt={`Slide ${i + 1}`}
                           className="w-full h-full object-cover"
-                          loading="eager"
+                          loading={isMobile ? "lazy" : "eager"}
                           decoding="async"
                           onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
                         />
@@ -193,6 +199,8 @@ const Index = () => {
         </div>
       </section>
 
+      {!isMobile && (
+        <>
       {/* Vídeo de demonstração (iframe) */}
       <section className="py-24" id="video-demo">
         <div className="container mx-auto px-4">
@@ -217,6 +225,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+        </>
+      )}
 
       {/* Features Section */}
       <section className="py-24 bg-card">
