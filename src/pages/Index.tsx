@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Search, List, Download, BarChart3, Shield, Zap, Users, Briefcase, Video, Megaphone, ClipboardList, Stethoscope, Brain, Bone, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,6 +75,39 @@ const Index = () => {
 
   // Hero: carrossel de imagens 16:9; vídeo em seção própria via iframe
   const heroVideoId = 1123837779;
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+
+  // Reinicia o vídeo ao terminar e evita telas de recomendação
+  useEffect(() => {
+    const ensureVimeoApi = () =>
+      new Promise<any>((resolve) => {
+        const w: any = window as any;
+        if (w.Vimeo && w.Vimeo.Player) {
+          resolve(w.Vimeo);
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://player.vimeo.com/api/player.js";
+        script.async = true;
+        script.onload = () => resolve((window as any).Vimeo);
+        document.head.appendChild(script);
+      });
+
+    ensureVimeoApi().then((Vimeo: any) => {
+      if (!iframeRef.current) return;
+      const player = new Vimeo.Player(iframeRef.current);
+      // Garante que o vídeo volte ao início automaticamente
+      player.setLoop(true).catch(() => {});
+      player.on("ended", async () => {
+        try {
+          await player.setCurrentTime(0);
+          await player.play();
+        } catch (e) {
+          // Ignora erros de reprodução
+        }
+      });
+    });
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -161,7 +194,8 @@ const Index = () => {
             <div className="rounded-3xl bg-black border-8 border-gray-800 shadow-2xl p-3">
               <div className="relative aspect-video rounded-xl overflow-hidden ring-1 ring-white/10">
                 <iframe
-                  src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0`}
+                  ref={iframeRef}
+                  src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0&loop=1&dnt=1&sidedock=0`}
                   className="w-full h-full"
                   allow="fullscreen; picture-in-picture"
                   allowFullScreen
