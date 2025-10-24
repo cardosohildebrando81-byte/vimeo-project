@@ -17,7 +17,6 @@ import thumb07 from "@/assets/thumb-07.jpg";
 import thumb08 from "@/assets/thumb-08.jpg";
 
 const Index = () => {
-  const SHOW_PAGE_CTA = false; // Ocultar/inativar CTAs da página
   const features = [
     {
       icon: Search,
@@ -77,6 +76,7 @@ const Index = () => {
   // Hero: carrossel de imagens 16:9; vídeo em seção própria via iframe
   const heroVideoId = 1123837779;
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const SHOW_PAGE_CTA = false; // Ocultar botões de CTA na página temporariamente
 
   // Reinicia o vídeo ao terminar e evita telas de recomendação
   useEffect(() => {
@@ -132,29 +132,23 @@ const Index = () => {
               <p className="text-xl text-muted-foreground max-w-xl">
                 Centralize, publique e mensure vídeos por especialidade — com catálogo aprovado e integrado ao Vimeo. Tenha acesso a mais de 8.000 vídeos validados
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                {SHOW_PAGE_CTA && (
-                  <Link to="/login">
-                    <Button size="lg" className="gradient-primary shadow-primary group" disabled>
-                      Acessar Sistema
-                      <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
-                )}
-                {SHOW_PAGE_CTA && (
-                  <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail">
-                    <Button size="lg" variant="outline" className="border-border" disabled>
-                      Solicitar demo
-                    </Button>
-                  </a>
-                )}
+
+{SHOW_PAGE_CTA && (
+  <div className="flex flex-col sm:flex-row gap-4">
+    <Link to="/login">
+      <Button size="lg" className="gradient-primary shadow-primary group">
+        Acessar Sistema
+        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+      </Button>
+    </Link>
+    <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail">
+      <Button size="lg" variant="outline" className="border-border">
+        Solicitar demo
+      </Button>
+    </a>
+  </div>
+)}
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm">
-                <span className="px-3 py-1 rounded-full bg-secondary text-foreground/80">8.000+ vídeos</span>
-                <span className="px-3 py-1 rounded-full bg-secondary text-foreground/80">120+ especialidades</span>
-                <span className="px-3 py-1 rounded-full bg-secondary text-foreground/80">10+ anos de conteúdo</span>
-              </div>
-            </div>
 
             {/* Poster 16:9 com click-to-play */}
             <div className="relative animate-slide-up">
@@ -388,14 +382,14 @@ const Index = () => {
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               Entre no sistema e crie playlists inteligentes para seus clientes com poucos cliques.
             </p>
-            {SHOW_PAGE_CTA && (
-              <Link to="/login">
-                <Button size="lg" className="gradient-primary shadow-primary" disabled>
-                  Acessar Sistema
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-            )}
+{SHOW_PAGE_CTA && (
+  <Link to="/login">
+    <Button size="lg" className="gradient-primary shadow-primary">
+      Acessar Sistema
+      <ArrowRight className="ml-2 w-5 h-5" />
+    </Button>
+  </Link>
+)}
           </div>
         </div>
       </section>
