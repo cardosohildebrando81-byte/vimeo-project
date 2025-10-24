@@ -74,7 +74,7 @@ const Index = () => {
   ];
 
   // Hero: carrossel de imagens 16:9; vídeo em seção própria via iframe
-  const heroVideoId = 76979871; // TODO: substituir por ID real
+  const heroVideoId = 1123837779;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -93,15 +93,10 @@ const Index = () => {
                 </span>
               </div>
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
-                Crie playlists{" "}
-                <span className="text-black">
-                  personalizadas
-                </span>{" "}
-                para seus clientes
+                Gestão inteligente de vídeos médicos para salas de espera e marketing da sua clínica
               </h1>
               <p className="text-xl text-muted-foreground max-w-xl">
-                Ferramenta interna para criação e gestão de playlists de vídeos médicos personalizadas. 
-                Acesso a mais de 8.000 vídeos educacionais organizados por especialidade.
+                Centralize, publique e mensure vídeos por especialidade — com catálogo aprovado e integrado ao Vimeo. Tenha acesso a mais de 8.000 vídeos validados
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/login">
