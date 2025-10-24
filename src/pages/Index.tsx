@@ -96,12 +96,7 @@ const Index = () => {
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/dashboard">
-                  <Button size="lg" variant="outline">
-                    <PlayCircle className="mr-2 w-5 h-5" />
-                    Ver Dashboard
-                  </Button>
-                </Link>
+                {/* Removido botão 'Ver Dashboard' da landing page */}
               </div>
               <div className="flex items-center space-x-8 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
