@@ -8,14 +8,44 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('[Supabase] Variáveis de ambiente ausentes: VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY');
 }
 
-// Criação do cliente Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
-})
+// Criação do cliente Supabase (com fallback seguro para evitar crash quando .env não está configurado)
+let supabaseClient: any;
+try {
+  if (!supabaseUrl || !supabaseAnonKey) throw new Error('Supabase env missing');
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  });
+} catch (e: any) {
+  console.error('[Supabase] Falha ao inicializar o cliente:', e?.message);
+  // Fallback: cliente "no-op" para impedir que páginas que importam supabase quebrem
+  const noOpQuery: any = {
+    select: async () => ({ data: null, error: new Error('Supabase não configurado') }),
+    insert: async () => ({ data: null, error: new Error('Supabase não configurado') }),
+    update: async () => ({ data: null, error: new Error('Supabase não configurado') }),
+    delete: async () => ({ error: new Error('Supabase não configurado') }),
+    eq: () => noOpQuery,
+    limit: () => noOpQuery,
+    maybeSingle: async () => ({ data: null, error: new Error('Supabase não configurado') }),
+  };
+  supabaseClient = {
+    auth: {
+      getUser: async () => ({ data: { user: null }, error: new Error('Supabase não configurado') }),
+      getSession: async () => ({ data: { session: null }, error: new Error('Supabase não configurado') }),
+      signOut: async () => ({ error: new Error('Supabase não configurado') }),
+      signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error('Supabase não configurado') }),
+      signUp: async () => ({ data: { user: null, session: null }, error: new Error('Supabase não configurado') }),
+      resetPasswordForEmail: async () => ({ error: new Error('Supabase não configurado') }),
+      updateUser: async () => ({ error: new Error('Supabase não configurado') }),
+    },
+    from: () => noOpQuery,
+  } as any;
+}
+
+export const supabase = supabaseClient
 
 // Tipos para autenticação
 export interface AuthUser {

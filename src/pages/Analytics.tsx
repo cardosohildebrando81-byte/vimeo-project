@@ -38,7 +38,11 @@ const Analytics = () => {
 
   useEffect(() => {
     const load = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setLoading(false);
+        setError('Você precisa estar logado para ver seus relatórios.');
+        return;
+      }
       setLoading(true);
       setError(null);
 
@@ -137,19 +141,22 @@ const Analytics = () => {
       <div className="flex-1 flex flex-col">
         <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="container mx-auto px-4">
-            {/* Header */}
-            <div className="mb-8 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+          {/* Hero Header */}
+          <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl p-8 mb-8 overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+            
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold mb-2">Meus Relatórios</h1>
-                <p className="text-lg text-muted-foreground">
-                  Visualize suas estatísticas e métricas pessoais
-                </p>
+                <h1 className="text-3xl font-bold text-white mb-2">Meus Relatórios 📊</h1>
+                <p className="text-blue-100">Acompanhe o desempenho das suas playlists e vídeos</p>
               </div>
+              
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Período</span>
+                <span className="text-sm text-blue-100">Período</span>
                 <Select value={period} onValueChange={(v) => setPeriod(v as Period)}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-[180px] bg-white/10 backdrop-blur-sm border-white/20 text-white">
                     <SelectValue placeholder="Período" />
                   </SelectTrigger>
                   <SelectContent>
@@ -159,6 +166,9 @@ const Analytics = () => {
                 </Select>
               </div>
             </div>
+          </div>
+
+          <div className="max-w-7xl mx-auto space-y-8">
 
             {/* Loading */}
             {loading && (

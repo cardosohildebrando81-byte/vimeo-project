@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { getUserRole } from '@/lib/roles'
 import type { Role } from '@/types/database'
@@ -32,42 +32,89 @@ export function useRole() {
   const { user, initialized, loading } = useAuth()
   const [dbRole, setDbRole] = useState<Role | null>(null)
   const [fetching, setFetching] = useState(false)
+  const fetchedUserIdRef = useRef<string | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const metaRole = useMemo<Role | null>(() => readRoleFromMetadata(user), [user])
+  // Memoiza o role dos metadados para evitar recálculos desnecessários
+  const metaRole = useMemo<Role | null>(() => {
+    if (!user) return null
+    return readRoleFromMetadata(user)
+  }, [user?.id, user?.app_metadata, user?.user_metadata])
 
-  useEffect(() => {
-    let cancelled = false
-    async function fetchRole() {
-      if (!user?.id) {
-        setDbRole(null)
-        return
-      }
+  // Função debounced para buscar role do DB
+  const fetchRoleDebounced = useCallback(async (userId: string) => {
+    // Cancela timeout anterior se existir
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
+    // Se já buscamos para este usuário, não busca novamente
+    if (fetchedUserIdRef.current === userId) {
+      return
+    }
+
+    timeoutRef.current = setTimeout(async () => {
+      let cancelled = false
+      
       setFetching(true)
       try {
-        const r = await getUserRole(user.id)
-        if (!cancelled) setDbRole(r)
+        const r = await getUserRole(userId)
+        if (!cancelled) {
+          setDbRole(r)
+          fetchedUserIdRef.current = userId
+        }
       } catch (err) {
         console.warn('Falha ao buscar role do DB:', err)
         if (!cancelled) setDbRole(null)
       } finally {
         if (!cancelled) setFetching(false)
       }
-    }
-    if (initialized && !loading && user?.id) {
-      fetchRole()
-    } else {
-      setDbRole(null)
-    }
-    return () => { cancelled = true }
-  }, [user?.id, initialized, loading])
+    }, 100) // Debounce de 100ms
+  }, [])
 
-  const effectiveRole: Role | null = metaRole ?? dbRole
-  const isAdmin = effectiveRole === 'ADMIN'
+  useEffect(() => {
+    // Reset quando não há usuário
+    if (!user?.id) {
+      setDbRole(null)
+      fetchedUserIdRef.current = null
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+      return
+    }
+
+    // Só busca se auth estiver inicializado e não estiver carregando
+    if (initialized && !loading && user.id) {
+      // Se já temos role dos metadados, não precisa buscar do DB
+      if (metaRole) {
+        setDbRole(null)
+        fetchedUserIdRef.current = user.id
+        return
+      }
+      
+      // Busca do DB apenas se necessário
+      fetchRoleDebounced(user.id)
+    }
+
+    // Cleanup
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+  }, [user?.id, initialized, loading, metaRole, fetchRoleDebounced])
+
+  // Memoiza valores de retorno para evitar re-renders
+  const effectiveRole: Role | null = useMemo(() => metaRole ?? dbRole, [metaRole, dbRole])
+  const isAdmin = useMemo(() => effectiveRole === 'ADMIN', [effectiveRole])
+  const isLoading = useMemo(() => loading || !initialized || fetching, [loading, initialized, fetching])
 
   return {
     role: effectiveRole,
     isAdmin,
-    loading: loading || !initialized || fetching,
+    loading: isLoading,
     initialized
   }
 }

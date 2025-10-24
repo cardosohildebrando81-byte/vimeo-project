@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
@@ -14,23 +14,33 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    const initialized = authInitialized && roleInitialized;
-    const loading = authLoading || roleLoading;
+  // Memoiza os estados para evitar re-renders desnecessários
+  const authState = useMemo(() => ({
+    initialized: authInitialized && roleInitialized,
+    loading: authLoading || roleLoading,
+    hasUser: !!user,
+    isAdmin
+  }), [authInitialized, roleInitialized, authLoading, roleLoading, user, isAdmin]);
 
-    if (initialized && !loading) {
-      if (!user) {
-        navigate('/login', { state: { from: location }, replace: true });
-      } else if (!isAdmin) {
-        navigate('/dashboard', { replace: true });
-      }
+  // Memoiza a função de navegação para evitar re-criações
+  const handleNavigation = useCallback(() => {
+    if (!authState.initialized || authState.loading) {
+      return; // Ainda carregando, não navega
     }
-  }, [user, authLoading, roleLoading, authInitialized, roleInitialized, isAdmin, navigate, location]);
 
-  const initialized = authInitialized && roleInitialized;
-  const loading = authLoading || roleLoading;
+    if (!authState.hasUser) {
+      navigate('/login', { state: { from: location }, replace: true });
+    } else if (!authState.isAdmin) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [authState, navigate, location]);
 
-  if (!initialized || loading) {
+  useEffect(() => {
+    handleNavigation();
+  }, [handleNavigation]);
+
+  // Loading state
+  if (!authState.initialized || authState.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -41,7 +51,8 @@ const AdminRoute = ({ children }: AdminRouteProps) => {
     );
   }
 
-  if (!user || !isAdmin) {
+  // Não autorizado
+  if (!authState.hasUser || !authState.isAdmin) {
     return null;
   }
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search as SearchIcon, Filter, Grid, List as ListIcon, Loader2, AlertCircle, Settings, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search as SearchIcon, Filter, Grid, List as ListIcon, Loader2, AlertCircle, Settings, RefreshCw, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +15,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import Sidebar from "@/components/Sidebar";
 import { supabase } from "@/lib/supabase";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
 
 // Interface para cache local
 interface CacheEntry {
@@ -44,6 +47,17 @@ const Search = () => {
     specialty: "all",
     category: "all"
   });
+  // Novos estados para o painel "Mais filtros"
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [localCategory, setLocalCategory] = useState(filters.category);
+  const [localSpecialty, setLocalSpecialty] = useState(filters.specialty);
+  const filterCount = (filters.specialty !== "all" ? 1 : 0) + (filters.category !== "all" ? 1 : 0);
+  useEffect(() => {
+    if (isFiltersOpen) {
+      setLocalCategory(filters.category);
+      setLocalSpecialty(filters.specialty);
+    }
+  }, [isFiltersOpen, filters.category, filters.specialty]);
   // Opções dinâmicas de categoria (mapeadas do conteúdo dos vídeos)
   const [categoryOptions, setCategoryOptions] = useState<string[]>(["Todas"]);
   
@@ -158,6 +172,13 @@ const Search = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.id) return;
+
+      // Não registrar eventos de autoload (background)
+      if (payload?.origin === 'autoload') {
+        console.log('📊 Analytics: evento de autoload ignorado.');
+        return;
+      }
+
       await supabase.from('analytics_events').insert({
         user_id: user.id,
         type: 'search',
@@ -170,7 +191,12 @@ const Search = () => {
   };
 
   // Função principal de busca
-  const performSearch = useCallback(async (query: string = searchTerm, page: number = 1, useCache: boolean = true) => {
+  const performSearch = useCallback(async (
+    query: string = searchTerm,
+    page: number = 1,
+    useCache: boolean = true,
+    origin: 'manual' | 'filters' | 'pagination' | 'autoload' = 'manual'
+  ) => {
     // Cancelar requisição anterior se existir
     if (abortController.current) {
       abortController.current.abort();
@@ -205,7 +231,7 @@ const Search = () => {
           refreshCategoryOptions();
           setIsLoading(false);
           // Log com indicador de cache
-          logSearchEvent({ query, page, per_page: PER_PAGE, total: cachedResult.data.total, returned: cachedResult.data.data.length, usedCache: true, filters });
+          logSearchEvent({ query, page, per_page: PER_PAGE, total: cachedResult.data.total, returned: cachedResult.data.data.length, usedCache: true, filters, origin });
           return;
         }
       }
@@ -289,7 +315,7 @@ const Search = () => {
       
       console.log(`🔍 SEARCH DEBUG: Busca finalizada - ${filteredVideos.length} vídeos exibidos de ${result.total} total`);
       // Log de analytics
-      logSearchEvent({ query, page, per_page: PER_PAGE, total: result.total, returned: filteredVideos.length, usedCache: false, filters });
+      logSearchEvent({ query, page, per_page: PER_PAGE, total: result.total, returned: filteredVideos.length, usedCache: false, filters, origin });
 
     } catch (err: any) {
       // Não mostrar erro se foi cancelamento
@@ -333,7 +359,7 @@ const Search = () => {
     
     console.log('🔍 Busca manual ativada para:', searchTerm);
     setCurrentPage(1);
-    performSearch(searchTerm, 1, false); // Forçar nova busca sem cache
+    performSearch(searchTerm, 1, false, 'manual'); // Forçar nova busca sem cache
   };
 
   // Função para mudança de filtros (apenas atualiza o estado)
@@ -352,10 +378,40 @@ const Search = () => {
       // Reinicia paginação e força nova busca sem cache, igual ao botão "Buscar Vídeos"
       setCurrentPage(1);
       console.log('🔍 Busca automática por filtro:', filterType, '=>', value);
-      performSearch(searchTerm, 1, false);
+      performSearch(searchTerm, 1, false, 'filters');
     } else {
       console.log('🔧 Filtro atualizado:', filterType, '=', value);
     }
+  };
+
+  // Limpar todos os filtros ativos (categoria/especialidade) e atualizar resultados
+  const clearFilters = () => {
+    const nextFilters: SearchFilters = { category: 'all', specialty: 'all' };
+    setLocalCategory('all');
+    setLocalSpecialty('all');
+    setFilters(nextFilters);
+    setCurrentPage(1);
+    // Agendar a busca para o próximo tick para garantir estado atualizado
+    setTimeout(() => {
+      performSearch(searchTerm, 1, false, 'filters');
+    }, 0);
+  };
+
+  // Aplicar filtros escolhidos no painel e atualizar resultados
+  const applyFilters = () => {
+    const nextFilters: SearchFilters = { category: localCategory || 'all', specialty: localSpecialty || 'all' };
+    // Se nada mudou, apenas fechar o painel
+    if (nextFilters.category === filters.category && nextFilters.specialty === filters.specialty) {
+      setIsFiltersOpen(false);
+      return;
+    }
+    setFilters(nextFilters);
+    setCurrentPage(1);
+    // Agendar a busca para o próximo tick para garantir estado atualizado
+    setTimeout(() => {
+      performSearch(searchTerm, 1, false, 'filters');
+    }, 0);
+    setIsFiltersOpen(false);
   };
 
   // Cleanup na desmontagem do componente
@@ -371,10 +427,16 @@ const Search = () => {
     };
   }, []);
 
-  // Carregar vídeos iniciais apenas uma vez
+  // Carregar vídeos iniciais (configurável via env)
   useEffect(() => {
-    performSearch("", 1, true);
-  }, []); // Array vazio para executar apenas uma vez na montagem
+    const autoloadEnv = import.meta.env.VITE_SEARCH_AUTOLOAD;
+    const shouldAutoload = autoloadEnv === undefined || autoloadEnv === 'true' || autoloadEnv === '1';
+    if (shouldAutoload) {
+      performSearch("", 1, true, 'autoload');
+    } else {
+      console.log('🔍 SEARCH DEBUG: Autoload desativado. Nenhuma busca automática será executada na montagem.');
+    }
+  }, []); // Executa apenas uma vez na montagem
 
   // Atualiza as opções de categoria quando a lista de vídeos muda
   useEffect(() => {
@@ -387,7 +449,7 @@ const Search = () => {
     let target = Math.min(Math.max(1, page), totalPages);
     setCurrentPage(target);
     // Usa cache por página para melhorar a navegação
-    performSearch(searchTerm, target, true);
+    performSearch(searchTerm, target, true, 'pagination');
   }, [performSearch, searchTerm, totalVideos]);
 
   const getPaginationItems = useCallback((current: number, total: number) => {
@@ -456,10 +518,29 @@ const Search = () => {
       <div className="flex-1 flex flex-col">
         <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8">
-          <div className="container mx-auto px-4">
+          {/* Hero Header com Gradiente */}
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-8 text-white mb-8">
+            {/* Elementos decorativos de blur */}
+            <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+            <div className="absolute bottom-10 right-10 w-40 h-40 bg-purple-300/20 rounded-full blur-2xl"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-400/10 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10">
+              <div className="text-center space-y-4">
+                <h1 className="text-5xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                  Buscar Vídeos
+                </h1>
+                <p className="text-xl text-blue-100 max-w-2xl mx-auto">
+                  Explore nossa biblioteca com mais de 8.000 vídeos médicos
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-4 py-8">
             {/* Search Header */}
             <div className="space-y-6 mb-12">
-              <div>
+              <div className="hidden">
                 <h1 className="text-4xl font-bold mb-2">Buscar Vídeos</h1>
                 <p className="text-lg text-muted-foreground">
                   Explore nossa biblioteca com mais de 8.000 vídeos médicos
@@ -482,7 +563,7 @@ const Search = () => {
 
                 <Button 
                   onClick={handleSearch}
-                  className="h-12 px-6 bg-blue-600 hover:bg-blue-700"
+                  className="h-12 px-6 bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -576,12 +657,30 @@ const Search = () => {
                     <Button variant="default" size="sm" onClick={handleViewPlaylist}>
                       {`Ver Playlist (${items.length})`}
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => setIsFiltersOpen(true)}>
                       <Filter className="w-4 h-4 mr-2" />
-                      Mais filtros
+                      {`Mais filtros${filterCount > 0 ? ` (${filterCount})` : ''}`}
                     </Button>
                   </div>
                 </div>
+
+                {filterCount > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {filters.category !== "all" && (
+                      <Badge variant="secondary" className="cursor-pointer" onClick={() => handleFilterChange('category','all')}>
+                        Categoria: {filters.category}
+                        <X className="w-3 h-3 ml-1" />
+                      </Badge>
+                    )}
+                    {filters.specialty !== "all" && (
+                      <Badge variant="secondary" className="cursor-pointer" onClick={() => handleFilterChange('specialty','all')}>
+                        Especialidade: {filters.specialty}
+                        <X className="w-3 h-3 ml-1" />
+                      </Badge>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>Limpar filtros</Button>
+                  </div>
+                )}
 
                 {/* No Results */}
                 {videos.length === 0 && !isLoading && (
@@ -594,12 +693,55 @@ const Search = () => {
                     <Button onClick={() => {
                       setSearchTerm("");
                       setFilters({ specialty: "all", category: "all" });
-                      performSearch("", 1, false);
+                      performSearch("", 1, false, 'filters');
                     }}>
                       Limpar filtros
                     </Button>
                   </div>
                 )}
+
+                {/* Filtros em slide-over */}
+                <Sheet open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+                  <SheetContent side="right" className="sm:max-w-md">
+                    <SheetHeader>
+                      <SheetTitle>Mais filtros</SheetTitle>
+                    </SheetHeader>
+                    <div className="space-y-6 mt-4">
+                      <div className="space-y-2">
+                        <Label>Categoria</Label>
+                        <Select value={localCategory} onValueChange={(v) => setLocalCategory(v)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Todas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todas</SelectItem>
+                            {categoryOptions.filter((c) => c !== "Todas").map((c) => (
+                              <SelectItem key={c} value={c}>{c}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Especialidade</Label>
+                        <Select value={localSpecialty} onValueChange={(v) => setLocalSpecialty(v)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Todas" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todas</SelectItem>
+                            {categoryOptions.filter((c) => c !== "Todas").map((c) => (
+                              <SelectItem key={c} value={c}>{c}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <SheetFooter className="mt-6">
+                      <Button variant="outline" onClick={clearFilters}>Limpar</Button>
+                      <Button onClick={applyFilters}>Aplicar filtros</Button>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
 
                 {/* Video Grid/List */}
                 {videos.length > 0 && (
@@ -831,32 +973,32 @@ const Search = () => {
               </div>
             )}
           </div>
-      </main>
+        </main>
 
-      {/* Modal do Gerenciador de Cache */}
-      {showCacheManager && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold">Gerenciador de Cache</h2>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowCacheManager(false)}
-                >
-                  Fechar
-                </Button>
+        {/* Modal do Gerenciador de Cache */}
+        {showCacheManager && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold">Gerenciador de Cache</h2>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowCacheManager(false)}
+                  >
+                    Fechar
+                  </Button>
+                </div>
+                <CacheManager />
               </div>
-              <CacheManager />
             </div>
           </div>
-        </div>
-      )}
-
-      <Footer />
+        )}
+        
+        <Footer />
+      </div>
     </div>
-  </div>
   );
 };
 

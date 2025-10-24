@@ -152,12 +152,34 @@ const Settings: React.FC = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />
-        <main className="flex-1 py-12">
-          <div className="max-w-3xl mx-auto space-y-8 px-4">
-            <header>
-              <h1 className="text-2xl font-bold">Configurações</h1>
-              <p className="text-muted-foreground">Altere seu nome, foto e senha. Seu email não pode ser alterado.</p>
-            </header>
+        <main className="flex-1 container mx-auto px-4 py-8">
+          {/* Hero Header */}
+          <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl p-8 mb-8 overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-12 -translate-x-12"></div>
+            
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">Configurações ⚙️</h1>
+                <p className="text-blue-100">Gerencie seu perfil e preferências da conta</p>
+              </div>
+              
+              <div className="flex gap-3">
+                <Button 
+                  variant="secondary" 
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
+                >
+                  💾 Backup Dados
+                </Button>
+                <Button className="bg-white text-blue-600 hover:bg-blue-50 font-medium">
+                  🔒 Segurança
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-3xl mx-auto space-y-8 px-4 py-12">
 
             <section className="space-y-4">
               <h2 className="text-lg font-semibold">Perfil</h2>
@@ -189,7 +211,11 @@ const Settings: React.FC = () => {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                <Button 
+                  onClick={handleSaveProfile} 
+                  disabled={savingProfile}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
+                >
                   {savingProfile ? "Salvando..." : "Salvar alterações"}
                 </Button>
               </div>
@@ -208,7 +234,12 @@ const Settings: React.FC = () => {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button variant="outline" onClick={handleChangePassword} disabled={changingPassword}>
+                <Button 
+                  variant="outline" 
+                  onClick={handleChangePassword} 
+                  disabled={changingPassword}
+                  className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all duration-300"
+                >
                   {changingPassword ? "Atualizando..." : "Atualizar senha"}
                 </Button>
               </div>

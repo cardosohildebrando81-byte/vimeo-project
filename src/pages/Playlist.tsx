@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { FolderOpen } from 'lucide-react';
+import { FolderOpen, Video } from 'lucide-react';
 import { usePlaylist } from '@/hooks/usePlaylist';
 import { exportPlaylistToDOCX, exportPlaylistToXLSX } from '@/lib/export';
 import type { VimeoVideo } from '@/lib/vimeo';
@@ -187,37 +187,65 @@ const Playlist: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50/30">
       <Sidebar />
       <div className="flex-1 flex flex-col">
         <Navbar />
         <main className="flex-1 container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-3xl font-bold">Playlist</h1>
-              <p className="text-muted-foreground mt-2">Monte e exporte playlists personalizadas para seus clientes</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="destructive" onClick={clear} disabled={items.length === 0}>Limpar Playlist</Button>
-              <Button onClick={handleSave} disabled={!isValid || isSaving}>{isSaving ? 'Salvando...' : 'Salvar Playlist'}</Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="gradient-primary" disabled={!isValid}>Exportar Playlist</Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Escolha o formato</DialogTitle>
-                    <DialogDescription>Selecione abaixo o tipo de arquivo para exportar a playlist.</DialogDescription>
-                  </DialogHeader>
-                  <div className="flex flex-col gap-3">
-                    <Button onClick={() => handleExport('xls')}>Exportar em .xlsx</Button>
-                    <Button variant="outline" onClick={() => handleExport('docx')}>Exportar em .docx</Button>
+          <div className="max-w-7xl mx-auto space-y-8">
+            
+            {/* Hero Header com Gradiente */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-8 text-white">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative z-10">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div className="space-y-2">
+                    <h1 className="text-4xl font-bold tracking-tight">Minha Playlist 📋</h1>
+                    <p className="text-blue-100 text-lg">Organize e exporte seus vídeos selecionados</p>
                   </div>
-                </DialogContent>
-              </Dialog>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
+                      <Link to="/search">
+                        <Video className="h-4 w-4 mr-2" />
+                        Buscar Vídeos
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl"></div>
             </div>
-          </div>
+            
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+              <div className="flex gap-2">
+                <Button variant="destructive" onClick={clear} disabled={items.length === 0}>Limpar Playlist</Button>
+                <Button 
+                  onClick={handleSave} 
+                  disabled={!isValid || isSaving}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isSaving ? 'Salvando...' : 'Salvar Playlist'}
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="gradient-primary" disabled={!isValid}>Exportar Playlist</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Escolha o formato</DialogTitle>
+                      <DialogDescription>Selecione abaixo o tipo de arquivo para exportar a playlist.</DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3">
+                      <Button onClick={() => handleExport('xls')}>Exportar em .xlsx</Button>
+                      <Button variant="outline" onClick={() => handleExport('docx')}>Exportar em .docx</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
 
           {/* Form Card */}
           <Card className="mb-8">
@@ -266,6 +294,7 @@ const Playlist: React.FC = () => {
                 {items.map(({ id, video }) => renderVideoCard(video, id))}
               </div>
             )}
+          </div>
           </div>
         </main>
         <Footer />

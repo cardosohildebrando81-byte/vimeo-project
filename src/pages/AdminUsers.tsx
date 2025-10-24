@@ -268,21 +268,32 @@ const AdminUsers = () => {
   };
 
   return (
-    <>
-      <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col">
+      <div className="flex flex-1">
         <Sidebar />
         <div className="flex-1 flex flex-col">
           <Navbar />
           <main className="flex-1 container mx-auto px-4 py-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-3xl font-bold">Gerência de Usuários</h1>
-                <p className="text-muted-foreground mt-1">Administre contas, permissões e status dos usuários</p>
+            {/* Hero Header */}
+            <div className="relative mb-8 p-8 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white overflow-hidden">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-4xl font-bold mb-2">Gerência de Usuários</h1>
+                    <p className="text-blue-100 text-lg">Administre contas, permissões e status dos usuários</p>
+                  </div>
+                  <Button 
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/30 backdrop-blur-sm transition-all duration-200" 
+                    onClick={() => setCreateOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Novo Usuário
+                  </Button>
+                </div>
               </div>
-              <Button className="gradient-primary" onClick={() => setCreateOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Usuário
-              </Button>
+              <div className="absolute -top-4 -right-4 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-8 -left-8 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
             </div>
 
             {/* Lista de usuários (agora no topo do conteúdo principal) */}
@@ -576,6 +587,7 @@ const AdminUsers = () => {
           </main>
           <Footer />
         </div>
+      </div>
 
         {/* Dialog de criação */}
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -660,8 +672,7 @@ const AdminUsers = () => {
         </DialogContent>
       </Dialog>
     </div>
-    </>
-);
+  );
 };
 
 export default AdminUsers;

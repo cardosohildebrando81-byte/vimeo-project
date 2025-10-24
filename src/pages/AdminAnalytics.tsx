@@ -45,7 +45,11 @@ const AdminAnalytics = () => {
 
   useEffect(() => {
     const load = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setLoading(false);
+        setError('Você precisa estar logado como administrador para ver os relatórios.');
+        return;
+      }
       setLoading(true);
       setError(null);
 
@@ -220,110 +224,122 @@ const AdminAnalytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <Navbar />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-8">
+      <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50/30">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Navbar />
+          <main className="flex-1 container mx-auto px-4 py-8">
             <div className="flex items-center justify-center h-64">
               <div className="text-lg text-muted-foreground">Carregando analytics administrativos...</div>
             </div>
           </main>
+          <Footer />
         </div>
-        <Footer />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-        <Navbar />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-8">
+      <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50/30">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Navbar />
+          <main className="flex-1 container mx-auto px-4 py-8">
             <div className="flex items-center justify-center h-64">
               <div className="text-lg text-destructive">Erro: {error}</div>
             </div>
           </main>
+          <Footer />
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <Navbar />
-      <div className="flex">
-        <Sidebar />
-        <main className="flex-1 p-8">
+    <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50/30">
+      <Sidebar />
+      <div className="flex-1 flex flex-col">
+        <Navbar />
+        <main className="flex-1 container mx-auto px-4 py-8">
           <div className="max-w-7xl mx-auto space-y-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Analytics Administrativos</h1>
-                <p className="text-muted-foreground">Relatórios gerais da plataforma</p>
+            
+            {/* Hero Header com Gradiente */}
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-8 text-white">
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative z-10">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div className="space-y-2">
+                    <h1 className="text-4xl font-bold tracking-tight">Analytics Administrativos 📊</h1>
+                    <p className="text-blue-100 text-lg">Relatórios gerais e métricas da plataforma</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
+                      <SelectTrigger className="w-48 bg-white/20 border-white/30 text-white backdrop-blur-sm hover:bg-white/30">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os tempos</SelectItem>
+                        <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                        <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </div>
-              <Select value={period} onValueChange={(value: Period) => setPeriod(value)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os tempos</SelectItem>
-                  <SelectItem value="30d">Últimos 30 dias</SelectItem>
-                  <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl"></div>
             </div>
 
             {/* Métricas Principais */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total de Usuários</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="h-4 w-4 text-blue-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-blue-600">{stats.totalUsers.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
                     {stats.activeUsers} ativos no período
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total de Buscas</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  <BarChart3 className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalSearches.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-green-600">{stats.totalSearches.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
                     Pesquisas realizadas
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Vídeos Adicionados</CardTitle>
-                  <Video className="h-4 w-4 text-muted-foreground" />
+                  <Video className="h-4 w-4 text-purple-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalVideosAdded.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-purple-600">{stats.totalVideosAdded.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
                     Vídeos em playlists
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Playlists Criadas</CardTitle>
-                  <List className="h-4 w-4 text-muted-foreground" />
+                  <List className="h-4 w-4 text-orange-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalPlaylists.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-orange-600">{stats.totalPlaylists.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
                     Total de playlists
                   </p>
@@ -333,20 +349,20 @@ const AdminAnalytics = () => {
 
             {/* Exportações */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total de Exportações</CardTitle>
-                  <Download className="h-4 w-4 text-muted-foreground" />
+                  <Download className="h-4 w-4 text-indigo-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalExports.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-indigo-600">{stats.totalExports.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
                     Taxa de sucesso: {stats.exportSuccessRate}%
                   </p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-green-50 to-green-100/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Exportações XLSX</CardTitle>
                   <Download className="h-4 w-4 text-green-600" />
@@ -359,7 +375,7 @@ const AdminAnalytics = () => {
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-blue-50 to-blue-100/50 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Exportações DOCX</CardTitle>
                   <Download className="h-4 w-4 text-blue-600" />
@@ -375,46 +391,54 @@ const AdminAnalytics = () => {
 
             {/* Top Especialidades e Usuários */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100/50 hover:shadow-xl transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>Top Especialidades</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-blue-600" />
+                    Top Especialidades
+                  </CardTitle>
                   <CardDescription>Especialidades mais pesquisadas</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {stats.topSpecialties.map((specialty, index) => (
-                      <div key={specialty.name} className="flex items-center justify-between">
+                      <div key={`specialty-${index}-${specialty.name}`} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-blue-50/50 to-purple-50/50 hover:from-blue-100/50 hover:to-purple-100/50 transition-all duration-200">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
                             {index + 1}
                           </div>
                           <div>
-                            <p className="font-medium">{specialty.name}</p>
+                            <p className="font-medium text-gray-900">{specialty.name}</p>
                             <p className="text-sm text-muted-foreground">{specialty.count} buscas</p>
                           </div>
                         </div>
-                        <div className="text-sm font-medium">{specialty.percentage}%</div>
+                        <div className="text-sm font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                          {specialty.percentage}%
+                        </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-slate-50 to-slate-100/50 hover:shadow-xl transition-all duration-300">
                 <CardHeader>
-                  <CardTitle>Usuários Mais Ativos</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-green-600" />
+                    Usuários Mais Ativos
+                  </CardTitle>
                   <CardDescription>Usuários com mais atividade</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     {stats.topUsers.map((userStat, index) => (
-                      <div key={userStat.email} className="flex items-center justify-between">
+                      <div key={`user-${index}-${userStat.email}`} className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-green-50/50 to-blue-50/50 hover:from-green-100/50 hover:to-blue-100/50 transition-all duration-200">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
                             {index + 1}
                           </div>
                           <div>
-                            <p className="font-medium text-sm">{userStat.email}</p>
+                            <p className="font-medium text-sm text-gray-900">{userStat.email}</p>
                             <p className="text-xs text-muted-foreground">
                               {userStat.searches} buscas • {userStat.playlists} playlists • {userStat.exports} exports
                             </p>
@@ -429,8 +453,8 @@ const AdminAnalytics = () => {
             </div>
           </div>
         </main>
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 };

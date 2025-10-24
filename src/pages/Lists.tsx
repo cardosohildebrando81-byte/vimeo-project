@@ -84,16 +84,26 @@ const Lists = () => {
         <Navbar />
         <main className="flex-1 py-12">
           <div className="container mx-auto px-4">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-12">
-              <div>
-                <h1 className="text-4xl font-bold mb-2">Minhas Listas</h1>
-                <p className="text-lg text-muted-foreground">Organize e gerencie suas coleções de vídeos</p>
+            {/* Hero Header */}
+            <div className="relative mb-12 p-8 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-violet-700 text-white overflow-hidden">
+              <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-4xl font-bold mb-2">Minhas Listas</h1>
+                  <p className="text-lg text-blue-100">Organize e gerencie suas coleções de vídeos</p>
+                </div>
+                <Button 
+                  className="border-white/30 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm" 
+                  variant="outline" 
+                  size="lg"
+                  onClick={handleCreateNewList}
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Nova Lista
+                </Button>
               </div>
-              <Button className="gradient-primary shadow-primary" onClick={handleCreateNewList}>
-                <Plus className="w-5 h-5 mr-2" />
-                Nova Lista
-              </Button>
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl"></div>
             </div>
 
             {/* Lists Grid */}
@@ -108,7 +118,7 @@ const Lists = () => {
                   <div>
                     <h3 className="text-xl font-semibold mb-2">Nenhuma lista criada</h3>
                     <p className="text-muted-foreground mb-6">Crie sua primeira lista para organizar seus vídeos</p>
-                    <Button className="gradient-primary" onClick={handleCreateNewList}>
+                    <Button className="border-white/30 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm" variant="outline" onClick={handleCreateNewList}>
                       <Plus className="w-5 h-5 mr-2" />
                       Criar Primeira Lista
                     </Button>
