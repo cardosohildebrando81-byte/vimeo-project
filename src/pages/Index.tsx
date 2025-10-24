@@ -92,7 +92,7 @@ const Index = () => {
                   Sistema Interno TV Doutor
                 </span>
               </div>
-              <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
                 Gestão inteligente de vídeos médicos para salas de espera e marketing da sua clínica
               </h1>
               <p className="text-xl text-muted-foreground max-w-xl">
