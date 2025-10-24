@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Search, List, Download, BarChart3, Shield, Zap, Users, PlayCircle } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, Search, List, Download, BarChart3, Shield, Zap, Users, PlayCircle, Briefcase, Video, Megaphone, ClipboardList, Stethoscope, Brain, Bone, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
@@ -117,7 +118,11 @@ const Index = () => {
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                {/* Removido botão 'Ver Dashboard' da landing page */}
+                <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail">
+                  <Button size="lg" variant="outline" className="border-border">
+                    Solicitar demo
+                  </Button>
+                </a>
               </div>
               <div className="flex items-center space-x-8 text-sm text-muted-foreground">
                 <div className="flex items-center space-x-2">
@@ -127,6 +132,10 @@ const Index = () => {
                 <div className="flex items-center space-x-2">
                   <Users className="w-5 h-5 text-success" />
                   <span>Gestão centralizada</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5 text-success" />
+                  <span>Entrega rápida ao cliente</span>
                 </div>
               </div>
             </div>
@@ -242,6 +251,91 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Who it's for Section */}
+      <section className="py-24 bg-card">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <h2 className="text-4xl font-bold">Para quem é</h2>
+            <p className="text-xl text-muted-foreground">Equipes que usam vídeo como vetor de relacionamento e vendas</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { icon: Briefcase, title: "Comercial", bullets: ["Apresentações ágeis", "Playlists sob demanda", "Links compartilháveis"]},
+              { icon: Video, title: "Conteúdo/Vídeo", bullets: ["Catálogo centralizado", "Curadoria por especialidade", "Exportação profissional"]},
+              { icon: Megaphone, title: "Marketing", bullets: ["Campanhas com vídeo", "Segmentação por nicho", "Material de apoio"]},
+              { icon: ClipboardList, title: "Coordenação", bullets: ["Controle de acesso", "Relatórios", "Organização por cliente"]},
+            ].map((p, i) => {
+              const Icon = p.icon;
+              return (
+                <Card key={i} className="hover-lift border-border">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-lg gradient-primary shadow-primary">
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold">{p.title}</h3>
+                    <ul className="text-muted-foreground text-sm space-y-2">
+                      {p.bullets.map((b, idx) => (
+                        <li key={idx}>• {b}</li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-24 bg-card">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-3 gap-8 text-center">
+            <div className="space-y-2">
+              <div className="text-4xl font-bold text-primary">8.000+</div>
+              <div className="text-lg font-medium">Vídeos Disponíveis</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-bold text-primary">120+</div>
+              <div className="text-lg font-medium">Especialidades</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-4xl font-bold text-primary">10+</div>
+              <div className="text-lg font-medium">Anos de Conteúdo</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Showcase by specialty Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
+            <h2 className="text-4xl font-bold">Exemplos por especialidade</h2>
+            <p className="text-xl text-muted-foreground">Veja como playlists podem se adaptar a diferentes áreas</p>
+          </div>
+
+          <ShowcaseGrid />
+        </div>
+      </section>
+
+      {/* Social Proof Section */}
+      <section className="py-24 bg-card">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold">Confiança de quem usa vídeo no dia a dia</h2>
+            <p className="text-muted-foreground">Alguns dos setores atendidos</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center">
+            {["Hospitais", "Clínicas", "Laboratórios", "Operadoras"].map((label, i) => (
+              <div key={i} className="h-16 rounded-xl border border-border bg-background flex items-center justify-center text-muted-foreground">
+                {label}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-24">
         <div className="container mx-auto px-4">
@@ -260,8 +354,90 @@ const Index = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <h2 className="text-4xl font-bold text-center mb-12">Perguntas frequentes</h2>
+          <div className="space-y-4">
+            {[
+              { q: "Como acesso o sistema?", a: "Clique em 'Acessar Sistema' e faça login com suas credenciais internas." },
+              { q: "Posso criar playlists para diferentes clientes?", a: "Sim, você pode organizar playlists por cliente e especialidade." },
+              { q: "Consigo exportar o conteúdo?", a: "Há opções de exportação profissional para entregar ao cliente." },
+            ].map((item, i) => (
+              <details key={i} className="group rounded-xl border border-border bg-card p-4">
+                <summary className="cursor-pointer font-medium flex justify-between items-center">
+                  {item.q}
+                  <span className="text-muted-foreground group-open:hidden">+</span>
+                  <span className="text-muted-foreground hidden group-open:inline">−</span>
+                </summary>
+                <p className="mt-2 text-muted-foreground">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       </main>
       <Footer />
+    </div>
+  );
+};
+
+// Showcase Grid component inline for clarity
+const ShowcaseGrid = () => {
+  const [segment, setSegment] = useState<string>("Cardiologia");
+  const segments = ["Cardiologia", "Neurologia", "Ortopedia", "Dermatologia"];
+  const thumbs = [thumb01, thumb02, thumb03, thumb04, thumb06, thumb07, thumb08];
+
+  const icons: Record<string, any> = {
+    Cardiologia: HeartPulse,
+    Neurologia: Brain,
+    Ortopedia: Bone,
+    Dermatologia: Stethoscope,
+  };
+  const Icon = icons[segment] || Stethoscope;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {segments.map((s) => (
+          <button
+            key={s}
+            onClick={() => setSegment(s)}
+            className={`px-4 py-2 rounded-full border ${segment === s ? "bg-primary text-primary-foreground border-transparent" : "bg-background text-foreground border-border"}`}
+            aria-pressed={segment === s}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {thumbs.slice(0, 6).map((src, i) => (
+          <Card key={i} className="relative hover-lift border-border overflow-hidden">
+            <CardContent className="p-0">
+              <div className="relative" style={{ aspectRatio: "16 / 9" }}>
+                <img
+                  src={src}
+                  alt={`${segment} - exemplo ${i + 1}`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/placeholder.svg")}
+                />
+              </div>
+              <div className="p-4 flex items-center gap-3">
+                <Icon className="w-5 h-5 text-primary" />
+                <div className="text-sm">
+                  <div className="font-medium">{segment}</div>
+                  <div className="text-muted-foreground">Vídeo de exemplo</div>
+                </div>
+              </div>
+            </CardContent>
+            <Link to="/login" className="absolute inset-0" aria-label={`Ver detalhes de ${segment}`} />
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };

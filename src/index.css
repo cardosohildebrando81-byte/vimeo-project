@@ -214,3 +214,10 @@ All colors MUST be HSL.
     padding-bottom: calc(64px + env(safe-area-inset-bottom));
   }
 }
+
+/* Tornar áreas clicáveis maiores com stretched-link utilitário */
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
