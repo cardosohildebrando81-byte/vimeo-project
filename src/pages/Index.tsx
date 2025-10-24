@@ -115,7 +115,7 @@ const Index = () => {
       <main id="main-content" tabIndex={-1} className="flex-1">
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
+      <section id="inicio" className="relative pt-20 pb-32 overflow-hidden scroll-mt-24">
         <div className="absolute inset-0 gradient-subtle -z-10" />
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">

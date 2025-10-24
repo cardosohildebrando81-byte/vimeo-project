@@ -226,3 +226,41 @@ All colors MUST be HSL.
 .aspect-video {
   aspect-ratio: 16 / 9;
 }
+
+/* Global smooth scrolling for anchor navigation */
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Visual highlight when navigating to sections via #anchor */
+section:target,
+[target]:target {
+  /* Compensate sticky header globally, complementing Tailwind's scroll-mt utilities */
+  scroll-margin-top: 6rem;
+  /* Subtle pulse highlight that fades out */
+  animation: targetPulse 1.6s ease-out 1;
+  border-radius: calc(var(--radius) + 4px);
+}
+@keyframes targetPulse {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--ring) / 0.45);
+  }
+  60% {
+    box-shadow: 0 0 0 12px hsl(var(--ring) / 0.22);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--ring) / 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  section:target,
+  [target]:target {
+    animation: none;
+    box-shadow: none;
+  }
+}

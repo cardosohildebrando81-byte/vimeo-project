@@ -18,6 +18,7 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const SHOW_LOGIN_CTA = false; // Ocultar CTA de login temporariamente
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -81,10 +82,10 @@ const Navbar = () => {
 
           {/* Navegação desktop */}
           <nav className="hidden md:flex items-center gap-6" aria-label="Navegação principal">
-            <Link to="/" className={`text-sm hover:text-primary transition-smooth ${isActive('/') ? 'text-primary' : ''}`}>Início</Link>
-            <a href="#como-funciona" className="text-sm hover:text-primary transition-smooth">Como funciona</a>
-            <a href="#vitrine" className="text-sm hover:text-primary transition-smooth">Exemplos</a>
-            <a href="#faq" className="text-sm hover:text-primary transition-smooth">FAQ</a>
+            <a href="/#inicio" className="text-sm hover:text-primary transition-smooth">Início</a>
+            <a href="/#como-funciona" className="text-sm hover:text-primary transition-smooth">Como funciona</a>
+            <a href="/#vitrine" className="text-sm hover:text-primary transition-smooth">Exemplos</a>
+            <a href="/#faq" className="text-sm hover:text-primary transition-smooth">FAQ</a>
           </nav>
 
           {/* CTA sempre visível */}
@@ -92,9 +93,11 @@ const Navbar = () => {
             {user ? (
               <Button size="sm" variant="outline" onClick={handleSignOut}>Sair</Button>
             ) : (
-              <Link to="/login">
-                <Button size="sm" className="gradient-primary shadow-primary">Acessar sistema</Button>
-              </Link>
+              SHOW_LOGIN_CTA && (
+                <Link to="/login">
+                  <Button size="sm" className="gradient-primary shadow-primary">Acessar sistema</Button>
+                </Link>
+              )
             )}
           </div>
 
@@ -129,17 +132,19 @@ const Navbar = () => {
         <div className="bg-white/95 backdrop-blur border-b">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col gap-2" aria-label="Navegação móvel">
-              <Link to="/" className="px-2 py-2 rounded hover:bg-secondary">Início</Link>
-              <a href="#como-funciona" className="px-2 py-2 rounded hover:bg-secondary">Como funciona</a>
-              <a href="#vitrine" className="px-2 py-2 rounded hover:bg-secondary">Exemplos</a>
-              <a href="#faq" className="px-2 py-2 rounded hover:bg-secondary">FAQ</a>
+              <a href="/#inicio" className="px-2 py-2 rounded hover:bg-secondary" onClick={() => setIsOpen(false)}>Início</a>
+              <a href="/#como-funciona" className="px-2 py-2 rounded hover:bg-secondary" onClick={() => setIsOpen(false)}>Como funciona</a>
+              <a href="/#vitrine" className="px-2 py-2 rounded hover:bg-secondary" onClick={() => setIsOpen(false)}>Exemplos</a>
+              <a href="/#faq" className="px-2 py-2 rounded hover:bg-secondary" onClick={() => setIsOpen(false)}>FAQ</a>
               <div className="pt-2">
                 {user ? (
                   <Button className="w-full" variant="outline" onClick={handleSignOut}>Sair</Button>
                 ) : (
-                  <Link to="/login" className="w-full">
-                    <Button className="w-full gradient-primary shadow-primary">Acessar sistema</Button>
-                  </Link>
+                  SHOW_LOGIN_CTA && (
+                    <Link to="/login" className="w-full">
+                      <Button className="w-full gradient-primary shadow-primary">Acessar sistema</Button>
+                    </Link>
+                  )
                 )}
               </div>
             </nav>

@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 const StickyCtaMobile = () => {
   const { pathname } = useLocation();
   const [hidden, setHidden] = useState(false);
+  const SHOW_STICKY_CTA = false; // Ocultar CTA fixa temporariamente
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -42,7 +43,7 @@ const StickyCtaMobile = () => {
     };
   }, [pathname]);
 
-  if (pathname !== "/") return null;
+  if (pathname !== "/" || !SHOW_STICKY_CTA) return null;
 
   return (
     <div
