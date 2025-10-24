@@ -76,7 +76,7 @@ const Index = () => {
   // Hero: carrossel de imagens 16:9; vídeo em seção própria via iframe
   const heroVideoId = 1123837779;
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const SHOW_PAGE_CTA = false; // Ocultar botões de CTA na página temporariamente
+  const SHOW_PAGE_CTA = true; // Restaurar CTAs na página
 
   // Reinicia o vídeo ao terminar e evita telas de recomendação
   useEffect(() => {
@@ -148,6 +148,17 @@ const Index = () => {
     </a>
   </div>
 )}
+{/* Ícones com texto abaixo do CTA */}
+<div className="flex flex-wrap items-center gap-6 text-muted-foreground">
+  <div className="flex items-center gap-2">
+    <Shield className="w-5 h-5 text-green-600" aria-hidden="true" />
+    <span>Acesso restrito à equipe</span>
+  </div>
+  <div className="flex items-center gap-2">
+    <Users className="w-5 h-5 text-green-600" aria-hidden="true" />
+    <span>Gestão centralizada</span>
+  </div>
+</div>
               </div>
 
             {/* Poster 16:9 com click-to-play */}

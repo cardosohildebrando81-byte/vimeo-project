@@ -18,7 +18,7 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const menuRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const SHOW_LOGIN_CTA = false; // Ocultar CTA de login temporariamente
+  const SHOW_LOGIN_CTA = true; // Restaurar CTA de login
 
   const isActive = (path: string) => location.pathname === path;
 
