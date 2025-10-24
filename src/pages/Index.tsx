@@ -5,6 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import thumb1 from "@/assets/thumb-01.jpg";
+import thumb2 from "@/assets/thumb-02.jpg";
+import thumb3 from "@/assets/thumb-03.jpg";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const Index = () => {
   const features = [
@@ -110,17 +113,39 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Imagem Hero */}
+            {/* Imagem Hero - Carrossel */}
             <div className="relative animate-slide-up">
               <div className="absolute inset-0 gradient-hero opacity-20 blur-3xl rounded-full" />
-              <div className="relative w-full">
-                <img
-                  src={thumb1}
-                  alt="Conteúdo educativo"
-                  className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
-                  loading="lazy"
-                />
-              </div>
+              <Carousel className="relative w-full">
+                <CarouselContent>
+                  <CarouselItem>
+                    <img
+                      src={thumb1}
+                      alt="Conteúdo educativo 1"
+                      className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
+                      loading="lazy"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={thumb2}
+                      alt="Conteúdo educativo 2"
+                      className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
+                      loading="lazy"
+                    />
+                  </CarouselItem>
+                  <CarouselItem>
+                    <img
+                      src={thumb3}
+                      alt="Conteúdo educativo 3"
+                      className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
+                      loading="lazy"
+                    />
+                  </CarouselItem>
+                </CarouselContent>
+                <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white shadow-md" />
+                <CarouselNext className="right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white shadow-md" />
+              </Carousel>
             </div>
           </div>
         </div>
