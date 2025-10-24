@@ -8,6 +8,7 @@ import thumb1 from "@/assets/thumb-01.jpg";
 import thumb2 from "@/assets/thumb-02.jpg";
 import thumb3 from "@/assets/thumb-03.jpg";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const Index = () => {
   const features = [
@@ -116,7 +117,7 @@ const Index = () => {
             {/* Imagem Hero - Carrossel */}
             <div className="relative animate-slide-up">
               <div className="absolute inset-0 gradient-hero opacity-20 blur-3xl rounded-full" />
-              <Carousel className="relative w-full">
+              <Carousel className="relative w-full" opts={{ loop: true }} plugins={[Autoplay({ delay: 5000 })]}>
                 <CarouselContent>
                   <CarouselItem>
                     <img
