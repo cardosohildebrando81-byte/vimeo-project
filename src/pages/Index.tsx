@@ -7,6 +7,14 @@ import Footer from "@/components/Footer";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
+import thumb01 from "@/assets/thumb-01.jpg";
+import thumb02 from "@/assets/thumb-02.jpg";
+import thumb03 from "@/assets/thumb-03.jpg";
+import thumb04 from "@/assets/thumb-04.jpg";
+import thumb06 from "@/assets/thumb-06.jpg";
+import thumb07 from "@/assets/thumb-07.jpg";
+import thumb08 from "@/assets/thumb-08.jpg";
+
 const Index = () => {
   const features = [
     {
@@ -64,28 +72,15 @@ const Index = () => {
     },
   ];
 
-  // Novos slides do Hero usando imagens no diretório public/carousel
+  // Slides do Hero usando imagens locais em src/assets
   const heroSlides = [
-    {
-      src: "/carousel/voce-sabia-dislexia.jpg",
-      alt: "Você Sabia? Dislexia — criança estudando/escrevendo com badge 'DISLEXIA'",
-    },
-    {
-      src: "/carousel/enjoo-na-gravidez.jpg",
-      alt: "#EnjooNaGravidez — fala em ambiente externo; texto: A náusea é o sintoma mais comum na gestação.",
-    },
-    {
-      src: "/carousel/quiz-artrite.jpg",
-      alt: "Quiz — O que pode ajudar a aliviar os sintomas da artrite? Opções A/B/C com equipe médica ilustrada.",
-    },
-    {
-      src: "/carousel/na-cozinha-salada-fresh.jpg",
-      alt: "Na Cozinha — preparo de Salada Fresh na cozinha.",
-    },
-    {
-      src: "/carousel/mundo-pet-cancer-mama.jpg",
-      alt: "Mundo Pet — consulta veterinária; tema: câncer de mama em pets.",
-    },
+    { src: thumb01, alt: "Destaque 1" },
+    { src: thumb02, alt: "Destaque 2" },
+    { src: thumb03, alt: "Destaque 3" },
+    { src: thumb04, alt: "Destaque 4" },
+    { src: thumb06, alt: "Destaque 6" },
+    { src: thumb07, alt: "Destaque 7" },
+    { src: thumb08, alt: "Destaque 8" },
   ];
 
   return (
