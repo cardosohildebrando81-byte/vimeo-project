@@ -16,7 +16,6 @@ import thumb06 from "@/assets/thumb-06.jpg";
 import thumb07 from "@/assets/thumb-07.jpg";
 import thumb08 from "@/assets/thumb-08.jpg";
 import { useIsMobile } from "@/hooks/use-mobile";
-import StickyCtaMobile from "@/components/StickyCtaMobile";
 
 const Index = () => {
   const features = [
@@ -118,11 +117,9 @@ const Index = () => {
       <Navbar />
       <main id="main-content" tabIndex={-1} className="flex-1">
 
-      {/* CTA fixa para mobile */}
-      <StickyCtaMobile />
 
       {/* Hero Section */}
-      <section id="inicio" className="relative pt-20 pb-32 overflow-hidden scroll-mt-24">
+      <section id="inicio" className="relative pt-4 md:pt-20 pb-20 md:pb-32 overflow-hidden scroll-mt-24">
         <div className="absolute inset-0 gradient-subtle -z-10" />
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">

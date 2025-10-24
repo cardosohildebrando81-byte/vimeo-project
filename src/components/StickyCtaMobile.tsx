@@ -5,18 +5,21 @@ import { ArrowRight } from "lucide-react";
 const StickyCtaMobile = () => {
   const { pathname } = useLocation();
   const [hidden, setHidden] = useState(false);
-  const SHOW_STICKY_CTA = true; // Exibir CTA fixa em mobile
+  const SHOW_STICKY_CTA = false; // Ocultar CTA fixa em mobile conforme solicitação
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isLanding = pathname === "/";
 
-    // Reserva espaço no body para evitar CLS quando a barra aparece
-    if (isLanding) {
+    // Reserva espaço no body apenas se a CTA estiver ativa e na landing
+    if (isLanding && SHOW_STICKY_CTA) {
       document.body.classList.add("sticky-cta-active");
     } else {
       document.body.classList.remove("sticky-cta-active");
     }
+
+    // Se a CTA não estiver ativa ou não estivermos na landing, não registrar listeners
+    if (!SHOW_STICKY_CTA || !isLanding) return;
 
     // Oculta a CTA quando foco em campos de formulário (teclado móvel)
     const onFocusIn = (e: FocusEvent) => {
