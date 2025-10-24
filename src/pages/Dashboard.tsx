@@ -25,9 +25,11 @@ import { useAuth } from "@/hooks/useAuth";
 import Sidebar from "@/components/Sidebar";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useRole } from "@/hooks/useRole";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { isAdmin } = useRole();
   const [playlistsCount, setPlaylistsCount] = useState(0);
   const [stats, setStats] = useState({
     totalVideos: 0,
@@ -292,19 +294,21 @@ const Dashboard = () => {
                       </div>
                     </Link>
 
-                    <Link to="/admin/users">
-                      <div className="p-4 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 hover:border-orange-200 transition-all duration-200 hover:shadow-md cursor-pointer group">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 bg-orange-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <Users className="h-5 w-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-orange-900">Colaboradores</h3>
-                            <p className="text-sm text-orange-600/70">Gerencie sua equipe</p>
+                    {isAdmin && (
+                      <Link to="/admin/users">
+                        <div className="p-4 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 hover:border-orange-200 transition-all duration-200 hover:shadow-md cursor-pointer group">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 bg-orange-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <Users className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-orange-900">Colaboradores</h3>
+                              <p className="text-sm text-orange-600/70">Gerencie sua equipe</p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Link>
+                      </Link>
+                    )}
                   </div>
                 </CardContent>
               </Card>
