@@ -71,9 +71,9 @@ const Navbar = () => {
   }, [location.pathname]);
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur bg-white/70 border-b">
+    <header className="sticky top-0 z-50 backdrop-blur bg-white/70 border-b relative">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2" aria-label="Ir para a página inicial">
             <Video className="w-6 h-6 text-primary" />
@@ -136,11 +136,11 @@ const Navbar = () => {
       <div
         id="mobile-menu"
         ref={menuRef}
-        className={`md:hidden ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'} transition-smooth`}
+        className={`md:hidden absolute left-0 right-0 top-full ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'} transition-smooth`}
         role="dialog"
         aria-modal="true"
       >
-        <div className="bg-white/95 backdrop-blur border-b">
+        <div className="bg-white/95 backdrop-blur border-b shadow-md">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col gap-2" aria-label="Navegação móvel">
               <a href="/#inicio" className="px-2 py-2 rounded hover:bg-secondary" onClick={() => setIsOpen(false)}>Início</a>
