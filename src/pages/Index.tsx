@@ -86,6 +86,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
+      <main id="main-content" tabIndex={-1} className="flex-1">
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-32 overflow-hidden">
@@ -259,6 +260,7 @@ const Index = () => {
         </div>
       </section>
 
+      </main>
       <Footer />
     </div>
   );

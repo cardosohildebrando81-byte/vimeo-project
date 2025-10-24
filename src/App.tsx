@@ -24,6 +24,7 @@ import Playlist from "./pages/Playlist";
 import AdminUsers from "./pages/AdminUsers";
 import Settings from "./pages/Settings";
 import { AuthProvider } from "./hooks/useAuth";
+import StickyCtaMobile from "./components/StickyCtaMobile";
 
 const queryClient = new QueryClient();
 
@@ -32,9 +33,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <a href="#main-content" className="skip-link">Pular para o conteúdo</a>
       <BrowserRouter>
         <AuthProvider>
           <PlaylistProvider>
+            {/* Sticky CTA mobile */}
+            <StickyCtaMobile />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
