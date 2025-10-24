@@ -53,7 +53,7 @@ const Sidebar = () => {
 
   const itemClass = (active: boolean) =>
     `flex items-center ${gapClass} ${paddingX} py-3 rounded-xl transition-colors ${justifyClass} ${
-      active ? "bg-gray-700 text-white" : "text-gray-300 hover:bg-gray-700/60 hover:text-white"
+      active ? "bg-white/15 text-white shadow-sm" : "text-white/80 hover:bg-white/10 hover:text-white"
     }`;
 
   const handleSignOut = async () => {
@@ -73,17 +73,17 @@ const Sidebar = () => {
   }, [pathname, user?.id, isAdmin]);
 
   return (
-    <aside className={`${collapsed ? "w-20" : "w-72"} shrink-0 min-h-screen flex flex-col border-r border-gray-700 bg-gray-800 text-gray-100 relative z-40`}>
+    <aside className={`${collapsed ? "w-20" : "w-72"} shrink-0 min-h-screen flex flex-col border-r border-white/20 gradient-sidebar text-white relative z-40`}>
       {/* Header brand */}
-      <div className="p-4 border-b border-gray-700">
+      <div className="p-4 border-b border-white/20">
         <div className={`flex items-center ${collapsed ? "justify-center" : "gap-3"}`}>
           <Avatar className="h-10 w-10">
             <AvatarFallback className="bg-cyan-600 text-white font-bold">TV</AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1">
-              <div className="font-semibold leading-tight text-gray-100">TV Doutor Vimeo</div>
-              <div className="text-xs text-gray-400">Gestão de playlist de vídeos</div>
+              <div className="font-semibold leading-tight text-white">TV Doutor Vimeo</div>
+              <div className="text-xs text-white/70">Gestão de playlist de vídeos</div>
             </div>
           )}
           <button
@@ -91,12 +91,12 @@ const Sidebar = () => {
             aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
             title={collapsed ? "Expandir menu" : "Recolher menu"}
             onClick={() => setCollapsed((v) => !v)}
-            className={`ml-auto h-8 w-8 rounded-lg hover:bg-gray-700 flex items-center justify-center ${collapsed ? "" : ""}`}
+            className={`ml-auto h-8 w-8 rounded-lg hover:bg-white/10 flex items-center justify-center ${collapsed ? "" : ""}`}
           >
             {collapsed ? (
-              <ChevronRight className="h-4 w-4 text-gray-400" />
+              <ChevronRight className="h-4 w-4 text-white/70" />
             ) : (
-              <ChevronLeft className="h-4 w-4 text-gray-400" />
+              <ChevronLeft className="h-4 w-4 text-white/70" />
             )}
           </button>
         </div>
@@ -146,10 +146,10 @@ const Sidebar = () => {
       </div>
 
       {/* User card + menu */}
-      <div className="mt-auto p-4 border-t border-gray-700">
+      <div className="mt-auto p-4 border-t border-white/20">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className={`w-full flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2 rounded-xl bg-gray-700/60 hover:bg-gray-700 transition-colors`}>
+            <button className={`w-full flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 transition-colors`}>
               <Avatar className="h-10 w-10">
                 {avatarUrl ? (
                   <AvatarImage src={avatarUrl} alt={displayName} />
@@ -161,8 +161,8 @@ const Sidebar = () => {
               </Avatar>
               {!collapsed && (
                 <div className="flex-1 text-left">
-                  <div className="text-sm font-medium leading-tight text-gray-100">{displayName}</div>
-                  <div className="text-xs text-gray-400 truncate">{user?.email || ""}</div>
+                  <div className="text-sm font-medium leading-tight text-white">{displayName}</div>
+                  <div className="text-xs text-white/70 truncate">{user?.email || ""}</div>
                 </div>
               )}
             </button>
