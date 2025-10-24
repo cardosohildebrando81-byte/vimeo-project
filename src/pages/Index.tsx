@@ -157,14 +157,19 @@ const Index = () => {
             <h2 className="text-3xl font-bold">Vídeo de demonstração</h2>
             <p className="text-muted-foreground">Assista ao funcionamento com um exemplo real</p>
           </div>
-          <div className="relative w-full aspect-video rounded-2xl shadow-2xl overflow-hidden">
-            <iframe
-              src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0`}
-              className="w-full h-full"
-              allow="fullscreen; picture-in-picture"
-              allowFullScreen
-              title="Vídeo de demonstração"
-            />
+          <div className="mx-auto max-w-2xl sm:max-w-3xl">
+            <div className="rounded-3xl bg-black border-8 border-gray-800 shadow-2xl p-3">
+              <div className="relative aspect-video rounded-xl overflow-hidden ring-1 ring-white/10">
+                <iframe
+                  src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0`}
+                  className="w-full h-full"
+                  allow="fullscreen; picture-in-picture"
+                  allowFullScreen
+                  title="Vídeo de demonstração"
+                />
+              </div>
+            </div>
+            <div className="mx-auto mt-4 w-40 h-2 bg-gray-700 rounded-full shadow-md" aria-hidden="true" />
           </div>
         </div>
       </section>
