@@ -96,14 +96,14 @@ const Index = () => {
     ensureVimeoApi().then((Vimeo: any) => {
       if (!iframeRef.current) return;
       const player = new Vimeo.Player(iframeRef.current);
-      // Garante que o vídeo volte ao início automaticamente
-      player.setLoop(true).catch(() => {});
+      // Ao terminar, voltar ao início e manter pausado (sem reiniciar automaticamente)
+      player.setLoop(false).catch(() => {});
       player.on("ended", async () => {
         try {
           await player.setCurrentTime(0);
-          await player.play();
+          await player.pause();
         } catch (e) {
-          // Ignora erros de reprodução
+          // Ignora erros
         }
       });
     });
@@ -195,7 +195,7 @@ const Index = () => {
               <div className="relative aspect-video rounded-xl overflow-hidden ring-1 ring-white/10">
                 <iframe
                   ref={iframeRef}
-                  src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0&loop=1&dnt=1&sidedock=0`}
+                  src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0&loop=0&dnt=1&sidedock=0`}
                   className="w-full h-full"
                   allow="fullscreen; picture-in-picture"
                   allowFullScreen
@@ -243,7 +243,7 @@ const Index = () => {
       </section>
 
       {/* Workflow Section */}
-      <section className="py-24">
+      <section id="como-funciona" className="py-24 scroll-mt-24">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
             <h2 className="text-4xl font-bold">
@@ -347,7 +347,7 @@ const Index = () => {
       </section>
 
       {/* Showcase by specialty Section */}
-      <section className="py-24">
+      <section id="vitrine" className="py-24 scroll-mt-24">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
             <h2 className="text-4xl font-bold">Exemplos por especialidade</h2>
@@ -394,7 +394,7 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24">
+      <section id="faq" className="py-24 scroll-mt-24">
         <div className="container mx-auto px-4 max-w-3xl">
           <h2 className="text-4xl font-bold text-center mb-12">Perguntas frequentes</h2>
           <div className="space-y-4">
