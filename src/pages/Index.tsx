@@ -4,9 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import thumb1 from "@/assets/thumb-01.jpg";
-import thumb2 from "@/assets/thumb-02.jpg";
-import thumb3 from "@/assets/thumb-03.jpg";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 
@@ -67,6 +64,30 @@ const Index = () => {
     },
   ];
 
+  // Novos slides do Hero usando imagens no diretório public/carousel
+  const heroSlides = [
+    {
+      src: "/carousel/voce-sabia-dislexia.jpg",
+      alt: "Você Sabia? Dislexia — criança estudando/escrevendo com badge 'DISLEXIA'",
+    },
+    {
+      src: "/carousel/enjoo-na-gravidez.jpg",
+      alt: "#EnjooNaGravidez — fala em ambiente externo; texto: A náusea é o sintoma mais comum na gestação.",
+    },
+    {
+      src: "/carousel/quiz-artrite.jpg",
+      alt: "Quiz — O que pode ajudar a aliviar os sintomas da artrite? Opções A/B/C com equipe médica ilustrada.",
+    },
+    {
+      src: "/carousel/na-cozinha-salada-fresh.jpg",
+      alt: "Na Cozinha — preparo de Salada Fresh na cozinha.",
+    },
+    {
+      src: "/carousel/mundo-pet-cancer-mama.jpg",
+      alt: "Mundo Pet — consulta veterinária; tema: câncer de mama em pets.",
+    },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -119,30 +140,21 @@ const Index = () => {
               <div className="absolute inset-0 gradient-hero opacity-20 blur-3xl rounded-full" />
               <Carousel className="relative w-full" opts={{ loop: true }} plugins={[Autoplay({ delay: 5000 })]}>
                 <CarouselContent>
-                  <CarouselItem>
-                    <img
-                      src={thumb1}
-                      alt="Conteúdo educativo 1"
-                      className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
-                      loading="lazy"
-                    />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <img
-                      src={thumb2}
-                      alt="Conteúdo educativo 2"
-                      className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
-                      loading="lazy"
-                    />
-                  </CarouselItem>
-                  <CarouselItem>
-                    <img
-                      src={thumb3}
-                      alt="Conteúdo educativo 3"
-                      className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
-                      loading="lazy"
-                    />
-                  </CarouselItem>
+                  {heroSlides.map((slide, idx) => (
+                    <CarouselItem key={idx}>
+                      <img
+                        src={slide.src}
+                        alt={slide.alt}
+                        className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          // Fallback para placeholder caso a imagem não esteja disponível ainda
+                          (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+                        }}
+                      />
+                    </CarouselItem>
+                  ))}
                 </CarouselContent>
                 <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white shadow-md" />
                 <CarouselNext className="right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white shadow-md" />
