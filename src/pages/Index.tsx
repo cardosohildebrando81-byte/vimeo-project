@@ -137,15 +137,15 @@ const Index = () => {
               </p>
 
 {SHOW_PAGE_CTA && (
-  <div className="flex flex-col sm:flex-row gap-4">
-    <Link to="/login">
-      <Button size="lg" className="gradient-primary shadow-primary group">
+  <div className="grid grid-cols-2 gap-3 md:flex md:flex-row md:gap-4">
+    <Link to="/login" className="col-span-1">
+      <Button size={isMobile ? "sm" : "lg"} className="w-full gradient-primary shadow-primary group">
         Acessar Sistema
         <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
       </Button>
     </Link>
-    <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail">
-      <Button size="lg" variant="outline" className="border-border">
+    <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail" className="col-span-1">
+      <Button size={isMobile ? "sm" : "lg"} variant="outline" className="w-full border-border">
         Solicitar demo
       </Button>
     </a>
