@@ -73,16 +73,10 @@ const Index = () => {
     },
   ];
 
-  // Slides do Hero usando imagens locais em src/assets
-  const heroSlides = [
-    { src: thumb01, alt: "Destaque 1" },
-    { src: thumb02, alt: "Destaque 2" },
-    { src: thumb03, alt: "Destaque 3" },
-    { src: thumb04, alt: "Destaque 4" },
-    { src: thumb06, alt: "Destaque 6" },
-    { src: thumb07, alt: "Destaque 7" },
-    { src: thumb08, alt: "Destaque 8" },
-  ];
+  // Hero: pôster estático 16:9 e vídeo clicável (Vimeo)
+  const heroPoster = thumb01;
+  const heroVideoId = 76979871; // TODO: substituir por ID real
+  const [heroPlaying, setHeroPlaying] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -124,46 +118,52 @@ const Index = () => {
                   </Button>
                 </a>
               </div>
-              <div className="flex items-center space-x-8 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-success" />
-                  <span>Acesso restrito à equipe</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-success" />
-                  <span>Gestão centralizada</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Zap className="w-5 h-5 text-success" />
-                  <span>Entrega rápida ao cliente</span>
-                </div>
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <span className="px-3 py-1 rounded-full bg-secondary text-foreground/80">8.000+ vídeos</span>
+                <span className="px-3 py-1 rounded-full bg-secondary text-foreground/80">120+ especialidades</span>
+                <span className="px-3 py-1 rounded-full bg-secondary text-foreground/80">10+ anos de conteúdo</span>
               </div>
             </div>
 
-            {/* Imagem Hero - Carrossel */}
+            {/* Poster 16:9 com click-to-play */}
             <div className="relative animate-slide-up">
               <div className="absolute inset-0 gradient-hero opacity-20 blur-3xl rounded-full" />
-              <Carousel className="relative w-full" opts={{ loop: true }} plugins={[Autoplay({ delay: 5000 })]}>
-                <CarouselContent>
-                  {heroSlides.map((slide, idx) => (
-                    <CarouselItem key={idx}>
-                      <img
-                        src={slide.src}
-                        alt={slide.alt}
-                        className="w-full h-[360px] object-cover rounded-2xl shadow-2xl"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          // Fallback para placeholder caso a imagem não esteja disponível ainda
-                          (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
-                        }}
-                      />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white shadow-md" />
-                <CarouselNext className="right-2 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white shadow-md" />
-              </Carousel>
+              <div className="relative w-full aspect-video rounded-2xl shadow-2xl overflow-hidden">
+                {heroPlaying ? (
+                  <iframe
+                    src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=1&muted=1&title=0&byline=0&portrait=0`}
+                    className="w-full h-full"
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    allowFullScreen
+                    title="Vídeo de demonstração"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    className="group w-full h-full relative text-left"
+                    onClick={() => setHeroPlaying(true)}
+                    aria-label="Reproduzir vídeo de demonstração"
+                  >
+                    <img
+                      src={heroPoster}
+                      alt="Pôster do vídeo de demonstração"
+                      className="w-full h-full object-cover"
+                      loading="eager"
+                      decoding="async"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                    />
+                    <span
+                      className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-smooth"
+                      aria-hidden="true"
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <span className="flex items-center justify-center w-16 h-16 rounded-full bg-white/90 shadow-lg group-hover:scale-105 transition-smooth">
+                        <PlayCircle className="w-8 h-8 text-primary" />
+                      </span>
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

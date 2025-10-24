@@ -221,3 +221,8 @@ All colors MUST be HSL.
   position: absolute;
   inset: 0;
 }
+
+/* Utilitário para manter 16:9 sem plugin */
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
