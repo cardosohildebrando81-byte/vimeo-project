@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { ArrowRight, Search, List, Download, BarChart3, Shield, Zap, Users, PlayCircle, Briefcase, Video, Megaphone, ClipboardList, Stethoscope, Brain, Bone, HeartPulse } from "lucide-react";
+import { ArrowRight, Search, List, Download, BarChart3, Shield, Zap, Users, Briefcase, Video, Megaphone, ClipboardList, Stethoscope, Brain, Bone, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
@@ -73,10 +73,8 @@ const Index = () => {
     },
   ];
 
-  // Hero: pôster estático 16:9 e vídeo clicável (Vimeo)
-  const heroPoster = thumb01;
+  // Hero: carrossel de imagens 16:9; vídeo em seção própria via iframe
   const heroVideoId = 76979871; // TODO: substituir por ID real
-  const [heroPlaying, setHeroPlaying] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -129,42 +127,49 @@ const Index = () => {
             <div className="relative animate-slide-up">
               <div className="absolute inset-0 gradient-hero opacity-20 blur-3xl rounded-full" />
               <div className="relative w-full aspect-video rounded-2xl shadow-2xl overflow-hidden">
-                {heroPlaying ? (
-                  <iframe
-                    src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=1&muted=1&title=0&byline=0&portrait=0`}
-                    className="w-full h-full"
-                    allow="autoplay; fullscreen; picture-in-picture"
-                    allowFullScreen
-                    title="Vídeo de demonstração"
-                  />
-                ) : (
-                  <button
-                    type="button"
-                    className="group w-full h-full relative text-left"
-                    onClick={() => setHeroPlaying(true)}
-                    aria-label="Reproduzir vídeo de demonstração"
-                  >
-                    <img
-                      src={heroPoster}
-                      alt="Pôster do vídeo de demonstração"
-                      className="w-full h-full object-cover"
-                      loading="eager"
-                      decoding="async"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
-                    />
-                    <span
-                      className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-smooth"
-                      aria-hidden="true"
-                    />
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <span className="flex items-center justify-center w-16 h-16 rounded-full bg-white/90 shadow-lg group-hover:scale-105 transition-smooth">
-                        <PlayCircle className="w-8 h-8 text-primary" />
-                      </span>
-                    </span>
-                  </button>
-                )}
+                <Carousel
+                  opts={{ loop: true, align: "start" }}
+                  plugins={[Autoplay({ delay: 4000, stopOnInteraction: true })]}
+                  className="w-full h-full"
+                >
+                  <CarouselContent className="h-full">
+                    {[thumb01, thumb02, thumb03, thumb04, thumb06, thumb07, thumb08].map((src, i) => (
+                      <CarouselItem key={i} className="h-full">
+                        <img
+                          src={src}
+                          alt={`Slide ${i + 1}`}
+                          className="w-full h-full object-cover"
+                          loading="eager"
+                          decoding="async"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/placeholder.svg'; }}
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious className="bg-white/80 backdrop-blur" />
+                  <CarouselNext className="bg-white/80 backdrop-blur" />
+                </Carousel>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Vídeo de demonstração (iframe) */}
+      <section className="py-24" id="video-demo">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-3xl mx-auto mb-8 space-y-3">
+            <h2 className="text-3xl font-bold">Vídeo de demonstração</h2>
+            <p className="text-muted-foreground">Assista ao funcionamento com um exemplo real</p>
+          </div>
+          <div className="relative w-full aspect-video rounded-2xl shadow-2xl overflow-hidden">
+            <iframe
+              src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0`}
+              className="w-full h-full"
+              allow="fullscreen; picture-in-picture"
+              allowFullScreen
+              title="Vídeo de demonstração"
+            />
           </div>
         </div>
       </section>
