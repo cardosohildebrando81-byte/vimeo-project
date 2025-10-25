@@ -156,14 +156,18 @@ const Index = () => {
   </div>
 )}
 {/* Ícones com texto abaixo do CTA */}
-<div className="w-full flex flex-nowrap items-center justify-between gap-2 md:gap-4 text-sm md:text-base lg:text-lg text-muted-foreground">
-  <div className="flex flex-1 items-center gap-2 min-w-0">
+<div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 items-center gap-2 md:gap-4 text-sm md:text-base lg:text-lg text-muted-foreground">
+  <div className="flex items-center gap-2 min-w-0">
     <Shield className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
     <span className="whitespace-nowrap">Acesso restrito à equipe</span>
   </div>
-  <div className="flex flex-1 items-center gap-2 min-w-0">
+  <div className="flex items-center gap-2 min-w-0">
     <Users className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
     <span className="whitespace-nowrap">Gestão centralizada</span>
+  </div>
+  <div className="flex items-center gap-2 min-w-0">
+    <ClipboardList className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
+    <span className="whitespace-nowrap">Catálogo aprovado</span>
   </div>
 </div>
               </div>
