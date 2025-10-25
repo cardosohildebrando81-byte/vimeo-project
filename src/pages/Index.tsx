@@ -156,14 +156,14 @@ const Index = () => {
   </div>
 )}
 {/* Ícones com texto abaixo do CTA */}
-<div className="flex flex-wrap items-center gap-6 text-muted-foreground">
-  <div className="flex items-center gap-2">
-    <Shield className="w-5 h-5 text-green-600" aria-hidden="true" />
-    <span>Acesso restrito à equipe</span>
+<div className="w-full flex flex-nowrap items-center justify-between gap-2 md:gap-4 text-sm md:text-base lg:text-lg text-muted-foreground">
+  <div className="flex flex-1 items-center gap-2 min-w-0">
+    <Shield className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
+    <span className="whitespace-nowrap">Acesso restrito à equipe</span>
   </div>
-  <div className="flex items-center gap-2">
-    <Users className="w-5 h-5 text-green-600" aria-hidden="true" />
-    <span>Gestão centralizada</span>
+  <div className="flex flex-1 items-center gap-2 min-w-0">
+    <Users className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
+    <span className="whitespace-nowrap">Gestão centralizada</span>
   </div>
 </div>
               </div>
@@ -214,9 +214,11 @@ const Index = () => {
               <div className="relative aspect-video rounded-xl overflow-hidden ring-1 ring-white/10">
                 <iframe
                   ref={iframeRef}
-                  src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&title=0&byline=0&portrait=0&loop=0&dnt=1&sidedock=0`}
+                  src={`https://player.vimeo.com/video/${heroVideoId}?autoplay=0&muted=0&playsinline=1&title=0&byline=0&portrait=0&loop=0&dnt=1&sidedock=0`}
                   className="w-full h-full"
-                  allow="fullscreen; picture-in-picture"
+                  loading="lazy"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
                   allowFullScreen
                   title="Vídeo de demonstração"
                 />
