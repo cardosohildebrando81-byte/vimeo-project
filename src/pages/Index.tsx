@@ -129,26 +129,30 @@ const Index = () => {
                   Sistema Interno TV Doutor
                 </span>
               </div>
-              <h1 className="text-4xl lg:text-5xl font-bold leading-tight">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-justify">
                 Gestão inteligente de vídeos médicos para salas de espera e marketing da sua clínica
               </h1>
-              <p className="text-xl text-muted-foreground max-w-xl">
+              <p className="text-xl text-muted-foreground max-w-xl text-justify">
                 Centralize, publique e mensure vídeos por especialidade — com catálogo aprovado e integrado ao Vimeo. Tenha acesso a mais de 8.000 vídeos validados
               </p>
 
 {SHOW_PAGE_CTA && (
-  <div className="grid grid-cols-2 gap-3 md:flex md:flex-row md:gap-4">
-    <Link to="/login" className="col-span-1">
-      <Button size={isMobile ? "sm" : "lg"} className="w-full gradient-primary shadow-primary group">
-        Acessar Sistema
-        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-      </Button>
-    </Link>
-    <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail" className="col-span-1">
-      <Button size={isMobile ? "sm" : "lg"} variant="outline" className="w-full border-border">
-        Solicitar demo
-      </Button>
-    </a>
+  <div className="flex flex-row gap-3 md:gap-4">
+    <div className="flex-1">
+      <Link to="/login" className="block w-full">
+        <Button size={isMobile ? "sm" : "lg"} className="w-full gradient-primary shadow-primary group">
+           <span className="text-xs md:text-sm lg:text-base">Acessar Sistema</span>
+           <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
+         </Button>
+      </Link>
+    </div>
+    <div className="flex-1">
+      <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail" className="block w-full">
+        <Button size={isMobile ? "sm" : "lg"} variant="outline" className="w-full border-border">
+           <span className="text-xs md:text-sm lg:text-base">Solicitar demo</span>
+         </Button>
+      </a>
+    </div>
   </div>
 )}
 {/* Ícones com texto abaixo do CTA */}
