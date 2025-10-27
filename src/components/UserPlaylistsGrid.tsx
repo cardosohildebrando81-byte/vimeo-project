@@ -136,12 +136,13 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                     <span className="text-muted-foreground">Atualizado</span>
                     <span className="font-medium">{new Date(list.updated_at || list.created_at || new Date()).toLocaleDateString("pt-BR")}</span>
                   </div>
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex items-start gap-2 pt-2">
+                    <div className="flex-1 flex flex-col gap-2">
                     {/* Ver Playlist: carrega a playlist no editor */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="w-full"
                       onClick={() => {
                         navigate("/playlist", { state: { clientPNumber: list.client_p_number, clientName: list.client_name, listId: list.id, mode: 'view' } });
                         onClose?.();
@@ -153,7 +154,7 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="flex-1"
+                      className="w-full"
                       onClick={() => {
                         navigate("/playlist", { state: { clientPNumber: list.client_p_number, clientName: list.client_name, listId: list.id, mode: 'edit' } });
                         onClose?.();
@@ -161,12 +162,15 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                     >
                       Editar Playlist
                     </Button>
+                    </div>
+                    <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={() => toast.info("Exportação direta será adicionada em breve.")}> 
                       <Download className="w-4 h-4" />
                     </Button>
                     <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(list)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

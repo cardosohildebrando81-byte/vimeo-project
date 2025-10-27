@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { FolderOpen, Video, Pencil } from 'lucide-react';
+import { FolderOpen, Video, Pencil, Loader2 } from 'lucide-react';
 import { usePlaylist } from '@/hooks/usePlaylist';
 import { exportPlaylistToDOCX, exportPlaylistToXLSX } from '@/lib/export';
 import type { VimeoVideo } from '@/lib/vimeo';
@@ -347,21 +347,29 @@ const Playlist: React.FC = () => {
               <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl"></div>
             </div>
             
+            {/* Indicador de carregamento da playlist */}
+            {isHydrating && (
+              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-800 rounded-md px-3 py-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Carregando playlist...
+              </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
               <div className="flex gap-2">
                 {/* Importante: envolver clear em arrow para não receber o MouseEvent como primeiro argumento */}
-                <Button variant="destructive" onClick={() => clear()} disabled={items.length === 0}>Limpar Playlist</Button>
+                <Button variant="destructive" onClick={() => clear()} disabled={items.length === 0 || isHydrating}>Limpar Playlist</Button>
                 <Button 
                   onClick={handleSave} 
-                  disabled={!isValid || isSaving}
+                  disabled={!isValid || isSaving || isHydrating}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {isSaving ? 'Salvando...' : 'Salvar Playlist'}
+                  {isHydrating ? 'Carregando...' : (isSaving ? 'Salvando...' : 'Salvar Playlist')}
                 </Button>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="gradient-primary" disabled={!isValid}>Exportar Playlist</Button>
+                    <Button className="gradient-primary" disabled={!isValid || isHydrating}>Exportar Playlist</Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
                     <DialogHeader>
