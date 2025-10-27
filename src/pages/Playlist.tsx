@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useLocation } from 'react-router-dom';
+import UserPlaylistsGrid from '@/components/UserPlaylistsGrid';
 
 const Playlist: React.FC = () => {
   const { items, remove, clear, playlists, currentId, setCurrent, createPlaylist } = usePlaylist();
@@ -26,36 +27,8 @@ const Playlist: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const location = useLocation();
 
-  // Estado para modal "Minha playlist" (lista do Supabase)
+  // Estado para modal "Minhas Listas" (usa grid reutilizável de /lists)
   const [showUserPlaylists, setShowUserPlaylists] = useState(false);
-  const [loadingUserPlaylists, setLoadingUserPlaylists] = useState(false);
-  const [userPlaylists, setUserPlaylists] = useState<Array<{
-    id?: number;
-    client_p_number: string;
-    client_name: string;
-    items: Array<{ id: string; uri: string; name: string; addedAt: number }>;
-    created_at?: string;
-    updated_at?: string;
-  }>>([]);
-
-  const fetchUserPlaylists = async () => {
-    if (!user?.id) return;
-    setLoadingUserPlaylists(true);
-    try {
-      const { data, error } = await supabase
-        .from('playlists')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-      if (error) throw error;
-      setUserPlaylists(data || []);
-    } catch (e: any) {
-      console.warn('[Playlist] Falha ao carregar suas playlists:', e);
-      toast.warning('Não foi possível carregar suas playlists', { description: e?.message || 'Erro desconhecido' });
-    } finally {
-      setLoadingUserPlaylists(false);
-    }
-  };
 
   useEffect(() => {
     const state = (location as any)?.state;
@@ -255,51 +228,21 @@ const Playlist: React.FC = () => {
                         </SelectContent>
                       </Select>
                       <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" onClick={() => createPlaylist('Nova Playlist')}>+ Nova Playlist</Button>
-                      {/* Botão para abrir modal com playlists do usuário (salvas/exportadas) */}
+                      {/* Botão para abrir modal com as listas do usuário, replicando /lists */}
                       <Dialog open={showUserPlaylists} onOpenChange={(o) => setShowUserPlaylists(o)}>
                         <DialogTrigger asChild>
-                          <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" onClick={() => fetchUserPlaylists()}>
-                            Minha playlist
+                          <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm">
+                            Minhas Listas
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-5xl">
                           <DialogHeader>
-                            <DialogTitle>Minhas playlists salvas/exportadas</DialogTitle>
-                            <DialogDescription>Listagem das playlists associadas à sua conta.</DialogDescription>
+                            <DialogTitle>Minhas Listas</DialogTitle>
+                            <DialogDescription>As listas abaixo são carregadas da sua conta, iguais à página /lists.</DialogDescription>
                           </DialogHeader>
-                          <div className="space-y-3">
-                            {loadingUserPlaylists && (
-                              <div className="space-y-2">
-                                <div className="h-5 w-40 bg-muted rounded animate-pulse" />
-                                <div className="h-5 w-56 bg-muted rounded animate-pulse" />
-                                <div className="h-5 w-32 bg-muted rounded animate-pulse" />
-                              </div>
-                            )}
-                            {!loadingUserPlaylists && userPlaylists.length === 0 && (
-                              <p className="text-sm text-muted-foreground">Você ainda não possui playlists salvas/exportadas.</p>
-                            )}
-                            {!loadingUserPlaylists && userPlaylists.length > 0 && (
-                              <div className="grid grid-cols-1 gap-3">
-                                {userPlaylists.map((pl, idx) => (
-                                  <Card key={pl.id ?? idx} className="border-border">
-                                    <CardContent className="p-4 flex items-center justify-between">
-                                      <div>
-                                        <div className="font-medium">{pl.client_name}</div>
-                                        <div className="text-sm text-muted-foreground">P: {pl.client_p_number} • Vídeos: {pl.items?.length || 0}</div>
-                                        <div className="text-xs text-muted-foreground">Atualizada em: {pl.updated_at ? new Date(pl.updated_at).toLocaleString('pt-BR') : '-'}</div>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <UserPlaylistsGrid onClose={() => setShowUserPlaylists(false)} />
                         </DialogContent>
                       </Dialog>
-                      {/* Novo botão: Ver todas as listas (navega para /lists) */}
-                      <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
-                        <Link to="/lists">Minhas Listas</Link>
-                      </Button>
                     </div>
                     <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
                       <Link to="/search">
