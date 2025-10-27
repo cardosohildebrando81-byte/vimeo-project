@@ -125,10 +125,14 @@ const Playlist: React.FC = () => {
         exportPlaylistToXLSX({ items: items.map((i) => i.video), clientPNumber, clientName });
         toast.success('Arquivo XLSX gerado com sucesso');
         logExportEvent('xlsx', true);
+        // Após exportar com sucesso, limpar seleção para nova busca
+        clear();
       } else {
         await exportPlaylistToDOCX({ items: items.map((i) => i.video), clientPNumber, clientName });
         toast.success('Arquivo DOCX gerado com sucesso');
         logExportEvent('docx', true);
+        // Após exportar com sucesso, limpar seleção para nova busca
+        clear();
       }
     } catch (e: any) {
       console.error('[Export] Falha ao exportar:', e);
@@ -148,6 +152,8 @@ const Playlist: React.FC = () => {
       if (ok) {
         toast.success('Playlist salva com sucesso');
         await logPlaylistSavedEvent('manual');
+        // Após salvar com sucesso, limpar seleção para nova busca
+        clear();
       }
     } catch (e: any) {
       console.error('[Playlist] Falha ao salvar:', e);
