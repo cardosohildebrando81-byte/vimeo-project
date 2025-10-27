@@ -818,14 +818,7 @@ const Search = () => {
                                   </DialogContent>
                                 </Dialog>
                                 <Button
-                                  className="flex-1"
-                                  variant="outline"
-                                  onClick={() => window.open(video.link, '_blank', 'noopener,noreferrer')}
-                                >
-                                  Ver no Vimeo
-                                </Button>
-                                <Button
-                                  className="flex-1"
+                                  className="w-full"
                                   onClick={() => handleAddVideo(video)}
                                   disabled={has(video.uri.split('/').pop() || video.uri)}
                                 >
@@ -908,14 +901,7 @@ const Search = () => {
                                 </DialogContent>
                               </Dialog>
                               <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => window.open(video.link, '_blank', 'noopener,noreferrer')}
-                              >
-                                Vimeo
-                              </Button>
-                              <Button
-                                size="sm"
+                                className="w-full"
                                 onClick={() => handleAddVideo(video)}
                                 disabled={has(video.uri.split('/').pop() || video.uri)}
                               >

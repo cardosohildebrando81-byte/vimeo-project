@@ -131,14 +131,7 @@ export const VimeoConnectionTest: React.FC = () => {
                 {result.user.link && (
                   <div>
                     <label className="text-sm font-medium text-gray-600">Perfil:</label>
-                    <a 
-                      href={result.user.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-800 underline ml-2"
-                    >
-                      Ver no Vimeo
-                    </a>
+                    <p className="text-sm ml-2">{result.user.link}</p>
                   </div>
                 )}
               </CardContent>
