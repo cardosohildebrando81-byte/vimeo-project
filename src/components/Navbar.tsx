@@ -70,6 +70,11 @@ const Navbar = () => {
     setIsOpen(false);
   }, [location.pathname]);
 
+  // Se o usuário estiver logado, não renderiza o navbar
+  if (user) {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur bg-white/70 border-b relative">
       <div className="container mx-auto px-4">
@@ -90,28 +95,20 @@ const Navbar = () => {
 
           {/* CTA sempre visível */}
           <div className="hidden md:flex items-center gap-3">
-            {user ? (
-              <Button size="sm" variant="outline" onClick={handleSignOut}>Sair</Button>
-            ) : (
-              SHOW_LOGIN_CTA && (
-                <Link to="/login">
-                  <Button size="sm" className="gradient-primary shadow-primary">Acessar sistema</Button>
-                </Link>
-              )
+            {SHOW_LOGIN_CTA && (
+              <Link to="/login">
+                <Button size="sm" className="gradient-primary shadow-primary">Acessar sistema</Button>
+              </Link>
             )}
           </div>
 
           {/* CTA e botão do menu mobile */}
           <div className="md:hidden flex items-center gap-2">
             {/* CTA visível no mobile */}
-            {user ? (
-              <Button size="sm" variant="outline" onClick={handleSignOut}>Sair</Button>
-            ) : (
-              SHOW_LOGIN_CTA && (
-                <Link to="/login" aria-label="Acessar sistema">
-                  <Button size="sm" className="gradient-primary shadow-primary">Acessar</Button>
-                </Link>
-              )
+            {SHOW_LOGIN_CTA && (
+              <Link to="/login" aria-label="Acessar sistema">
+                <Button size="sm" className="gradient-primary shadow-primary">Acessar</Button>
+              </Link>
             )}
             {/* Botão do menu mobile */}
             <button
@@ -148,14 +145,10 @@ const Navbar = () => {
               <a href="/#vitrine" className="px-2 py-2 rounded hover:bg-secondary" onClick={() => setIsOpen(false)}>Exemplos</a>
               <a href="/#faq" className="px-2 py-2 rounded hover:bg-secondary" onClick={() => setIsOpen(false)}>FAQ</a>
               <div className="pt-2">
-                {user ? (
-                  <Button className="w-full" variant="outline" onClick={handleSignOut}>Sair</Button>
-                ) : (
-                  SHOW_LOGIN_CTA && (
-                    <Link to="/login" className="w-full">
-                      <Button className="w-full gradient-primary shadow-primary">Acessar sistema</Button>
-                    </Link>
-                  )
+                {SHOW_LOGIN_CTA && (
+                  <Link to="/login" className="w-full">
+                    <Button className="w-full gradient-primary shadow-primary">Acessar sistema</Button>
+                  </Link>
                 )}
               </div>
             </nav>
