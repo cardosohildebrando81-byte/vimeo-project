@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { FolderOpen, Video, Pencil, Loader2, Save, Trash2, FileSpreadsheet, FileText } from 'lucide-react';
+import { FolderOpen, Video, Pencil, Loader2, Save, Trash2, FileSpreadsheet, FileText, AlertTriangle, Info } from 'lucide-react';
 import { usePlaylist } from '@/hooks/usePlaylist';
 import { exportPlaylistToDOCX, exportPlaylistToXLSX } from '@/lib/export';
 import type { VimeoVideo } from '@/lib/vimeo';
@@ -21,7 +21,7 @@ import { useLocation } from 'react-router-dom';
 import UserPlaylistsGrid from '@/components/UserPlaylistsGrid';
 
 const Playlist: React.FC = () => {
-  const { items, remove, clear, playlists, currentId, setCurrent, createPlaylist } = usePlaylist();
+  const { items, remove, clear, addMany, playlists, currentId, setCurrent, createPlaylist } = usePlaylist();
   const [clientPNumber, setClientPNumber] = useState('');
   const [clientName, setClientName] = useState('');
   const { user } = useAuth();
@@ -29,6 +29,13 @@ const Playlist: React.FC = () => {
   const location = useLocation();
   const { getVideo } = useVimeo();
   const [isHydrating, setIsHydrating] = useState(false);
+  // Avisos visuais: playlist não encontrada ou playlist vazia
+  const [hydrationNotice, setHydrationNotice] = useState<
+    | { type: 'not_found'; details?: { listId?: string; clientName?: string; clientPNumber?: string } }
+    | { type: 'empty'; details?: { listId?: string; clientName?: string; clientPNumber?: string; itemCount?: number } }
+    | null
+  >(null);
+  const [showDebug, setShowDebug] = useState(false);
 
   // Estado para modal "Minhas Listas" (usa grid reutilizável de /lists)
   const [showUserPlaylists, setShowUserPlaylists] = useState(false);
@@ -63,10 +70,25 @@ const Playlist: React.FC = () => {
                 .maybeSingle();
               if (e2) {
                 toast.error('Não foi possível carregar a playlist');
+                setHydrationNotice({ type: 'not_found', details: { listId: listId, clientName: state.clientName, clientPNumber: state.clientPNumber } });
+                console.group('[Playlist Hydration] Not Found');
+                console.log('userId:', user?.id);
+                console.log('listId:', listId);
+                console.log('clientPNumber:', state.clientPNumber);
+                console.log('clientName:', state.clientName);
+                console.warn('Supabase error:', e2);
+                console.groupEnd();
                 return;
               }
               if (!alt) {
                 toast.warning('Playlist não encontrada');
+                setHydrationNotice({ type: 'not_found', details: { listId: listId, clientName: state.clientName, clientPNumber: state.clientPNumber } });
+                console.group('[Playlist Hydration] Not Found');
+                console.log('userId:', user?.id);
+                console.log('listId:', listId);
+                console.log('clientPNumber:', state.clientPNumber);
+                console.log('clientName:', state.clientName);
+                console.groupEnd();
                 return;
               }
               await hydrateItems(alt.items || []);
@@ -85,8 +107,14 @@ const Playlist: React.FC = () => {
         const hydrateItems = async (itemsRaw: Array<{ id?: string; uri?: string; name?: string }>) => {
           // Converter itens do banco em vídeos completos; se falhar, usar dados mínimos
           try {
+            // Garantir que existe uma playlist corrente
+            let pid = currentId;
+            if (!pid) {
+              pid = createPlaylist('Playlist carregada');
+              setCurrent(pid);
+            }
             // Primeiro, limpar a playlist atual para evitar duplicatas
-            clear();
+            clear(pid);
             const videoIds = itemsRaw.map((it) => {
               if (typeof it.id === 'string' && it.id.trim() !== '') return it.id;
               if (typeof it.uri === 'string') {
@@ -95,6 +123,15 @@ const Playlist: React.FC = () => {
               }
               return '';
             }).filter(Boolean);
+
+            if (videoIds.length === 0) {
+              setHydrationNotice((prev) => {
+                const base = (location as any)?.state || {};
+                return { type: 'empty', details: { listId: base.listId, clientName: base.clientName, clientPNumber: base.clientPNumber, itemCount: 0 } };
+              });
+            } else {
+              setHydrationNotice(null);
+            }
 
             const videos: VimeoVideo[] = await Promise.all(videoIds.map(async (vid) => {
               try {
@@ -119,11 +156,18 @@ const Playlist: React.FC = () => {
 
             // Adiciona todos os vídeos carregados
             if (videos.length > 0) {
-              // addMany usa playlist atual; garantir que estamos em uma playlist válida
-              addMany(videos);
+              addMany(videos, pid);
             }
+            console.group('[Playlist Hydration] Items');
+            console.log('listId:', (location as any)?.state?.listId);
+            console.log('clientPNumber:', (location as any)?.state?.clientPNumber);
+            console.log('clientName:', (location as any)?.state?.clientName);
+            console.log('videoIds:', videoIds);
+            console.log('videosLoaded:', videos.length);
+            console.groupEnd();
           } catch (e) {
             console.warn('[Hydrate] Falha ao hidratar itens:', e);
+            toast.error('Falha ao carregar itens da playlist. Tente novamente.');
           }
         };
 
@@ -356,6 +400,47 @@ const Playlist: React.FC = () => {
               </div>
             )}
 
+            {/* Avisos visuais: não encontrada ou vazia */}
+            {!isHydrating && hydrationNotice?.type === 'not_found' && (
+              <div className="flex items-start justify-between gap-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-md px-4 py-3" aria-live="polite">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 shrink-0" />
+                  <div>
+                    <p className="font-semibold">Playlist não encontrada</p>
+                    <p className="text-sm opacity-80">Verifique se a lista existe na sua conta. ID: {hydrationNotice.details?.listId || '—'} · Cliente: {hydrationNotice.details?.clientName || '—'} · P: {hydrationNotice.details?.clientPNumber || '—'}</p>
+                    {showDebug && (
+                      <pre className="mt-2 text-xs bg-amber-100/60 rounded p-2 overflow-x-auto">
+{`debug: ${JSON.stringify(hydrationNotice.details, null, 2)}`}
+                      </pre>
+                    )}
+                    <button className="mt-2 text-amber-900/80 text-xs underline" onClick={() => setShowDebug((s) => !s)}>
+                      {showDebug ? 'Ocultar detalhes' : 'Mostrar detalhes'}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button variant="outline" onClick={() => setShowUserPlaylists(true)}>Minhas Listas</Button>
+                  <Button className="gradient-primary" asChild><Link to="/search">Buscar Vídeos</Link></Button>
+                </div>
+              </div>
+            )}
+
+            {!isHydrating && hydrationNotice?.type === 'empty' && (
+              <div className="flex items-start justify-between gap-4 bg-blue-50 border border-blue-200 text-blue-900 rounded-md px-4 py-3" aria-live="polite">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 shrink-0" />
+                  <div>
+                    <p className="font-semibold">Esta playlist está vazia</p>
+                    <p className="text-sm opacity-80">ID: {hydrationNotice.details?.listId || '—'} · Cliente: {hydrationNotice.details?.clientName || '—'} · P: {hydrationNotice.details?.clientPNumber || '—'}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button variant="outline" onClick={() => setShowUserPlaylists(true)}>Minhas Listas</Button>
+                  <Button className="gradient-primary" asChild><Link to="/search">Adicionar Vídeos</Link></Button>
+                </div>
+              </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
               <div className="flex gap-2">
@@ -437,10 +522,11 @@ const Playlist: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-2">Nenhum vídeo na playlist</h3>
-                    <p className="text-muted-foreground mb-6">Volte à busca e adicione vídeos à sua playlist</p>
+                    <p className="text-muted-foreground mb-6">Adicione vídeos à sua playlist para começar. Você pode buscar vídeos ou abrir Minhas Listas.</p>
                     <Button className="gradient-primary" asChild>
                       <Link to="/search">Ir para Busca</Link>
                     </Button>
+                    <Button variant="outline" className="ml-2" onClick={() => setShowUserPlaylists(true)}>Minhas Listas</Button>
                   </div>
                 </CardContent>
               </Card>

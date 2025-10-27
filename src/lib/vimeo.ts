@@ -59,6 +59,10 @@ class VimeoService {
   private readonly maxPages: number;
   private readonly batchSize: number;
   private readonly videosPerRequest: number;
+  // Enriquecimento de busca: incluir correspondências por tags via índice local
+  private readonly enrichSearchWithTags: boolean;
+  // Controle fino: evitar fetch incremental bloqueante durante enriquecimento por TAGs
+  private readonly enrichSearchTagsFetchIncremental: boolean;
 
   constructor() {
     this.accessToken = import.meta.env.VITE_VIMEO_ACCESS_TOKEN || '';
@@ -76,6 +80,9 @@ class VimeoService {
     this.maxPages = Number(import.meta.env.VITE_VIMEO_MAX_PAGES || 8); // antes era 50
     this.batchSize = Number(import.meta.env.VITE_VIMEO_BATCH_SIZE || 1); // antes 2
     this.videosPerRequest = Number(import.meta.env.VITE_VIMEO_VIDEOS_PER_REQUEST || 50); // antes 100
+    this.enrichSearchWithTags = (import.meta.env.VITE_VIMEO_SEARCH_ENRICH_TAGS || 'true') !== 'false';
+    // Por padrão NÃO realizar fetch incremental durante enriquecimento de busca, para evitar loops/bloqueios
+    this.enrichSearchTagsFetchIncremental = (import.meta.env.VITE_VIMEO_SEARCH_TAGS_FETCH_INCREMENTAL || 'false') === 'true';
 
     // Interceptor para tratar erros globais
     this.api.interceptors.response.use(
@@ -180,8 +187,69 @@ class VimeoService {
       const data = response.data;
       console.log(`✅ Vimeo API retornou: total=${data.total}, page=${data.page}, itens=${data.data.length}`);
 
-      // Se a API retornou resultados, usamos diretamente.
-      if (data.data.length > 0 || data.total > 0) {
+      // Se a API retornou resultados ou mesmo quando não, podemos enriquecer com uma BUSCA DIRETA por TAG na API
+      // Isso alinha o comportamento com a busca da Web do Vimeo, que considera TAGs.
+      if (this.enrichSearchWithTags && q.length > 0) {
+        try {
+          // 1) Busca adicional por TAG diretamente na API (sem carregar toda a biblioteca)
+          // Observação: a API do Vimeo suporta filter_tag para retornar vídeos com uma tag específica.
+          // Para capturar a maioria dos casos em uma única chamada, usamos per_page=100.
+          const tagResp: AxiosResponse<VimeoApiResponse<VimeoVideo>> = await this.api.get('/me/videos', {
+            params: {
+              filter_tag: q,
+              per_page: Math.max(100, perPage),
+              page: 1,
+              fields: 'uri,name,description,link,duration,created_time,modified_time,status,privacy,pictures,tags',
+              sort: 'date',
+              direction: 'desc'
+            }
+          });
+
+          const tagData = tagResp.data;
+          console.log(`🧩 API TAGS retornou: total=${tagData.total}, itens=${tagData.data.length}`);
+
+          // 2) Unir e deduplicar resultados (priorizando a ordem dos retornos por query)
+          const mapByUri = new Map<string, VimeoVideo>();
+          data.data.forEach(v => mapByUri.set(v.uri, v));
+          tagData.data.forEach(v => {
+            if (!mapByUri.has(v.uri)) mapByUri.set(v.uri, v);
+          });
+
+          const combined = Array.from(mapByUri.values());
+          const totalCombined = Math.max(data.total, tagData.total, combined.length);
+
+          // 3) Paginar localmente o conjunto unido
+          const startIndex = (page - 1) * perPage;
+          const endIndex = Math.min(startIndex + perPage, combined.length);
+          const paginated = combined.slice(startIndex, endIndex);
+          const totalPages = Math.max(1, Math.ceil(totalCombined / perPage));
+
+          const enriched: VimeoApiResponse<VimeoVideo> = {
+            total: totalCombined,
+            page,
+            per_page: perPage,
+            paging: {
+              next: page < totalPages ? `/search?page=${page + 1}&per_page=${perPage}` : null,
+              previous: page > 1 ? `/search?page=${page - 1}&per_page=${perPage}` : null,
+              first: `/search?page=1&per_page=${perPage}`,
+              last: `/search?page=${totalPages}&per_page=${perPage}`,
+            },
+            data: paginated,
+          };
+
+          return enriched;
+        } catch (apiTagErr) {
+          console.warn('⚠️ Falha na busca por TAG diretamente na API:', (apiTagErr as any)?.message || apiTagErr);
+          // Se falhar o enriquecimento por TAG via API, retornamos a resposta original
+          // e seguimos fluxo normal (inclusive fallback mais abaixo se aplicável)
+          if ((data.data.length > 0 || data.total > 0)) {
+            return data;
+          }
+        }
+      }
+
+      // Se ainda houver dados (query) retornados, entregar diretamente
+      if ((data.data.length > 0 || data.total > 0)) {
         return data;
       }
 

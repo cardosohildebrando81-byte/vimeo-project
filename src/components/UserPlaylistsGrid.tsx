@@ -144,6 +144,12 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                       size="sm"
                       className="w-full"
                       onClick={() => {
+                        console.group('[UserPlaylistsGrid] Navegação: Ver Playlist');
+                        console.log('listId:', list.id);
+                        console.log('clientPNumber:', list.client_p_number);
+                        console.log('clientName:', list.client_name);
+                        console.log('itemsCount:', videoCount);
+                        console.groupEnd();
                         navigate("/playlist", { state: { clientPNumber: list.client_p_number, clientName: list.client_name, listId: list.id, mode: 'view' } });
                         onClose?.();
                       }}
@@ -157,6 +163,12 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                       size="sm"
                       className="w-full"
                       onClick={() => {
+                        console.group('[UserPlaylistsGrid] Navegação: Editar Playlist');
+                        console.log('listId:', list.id);
+                        console.log('clientPNumber:', list.client_p_number);
+                        console.log('clientName:', list.client_name);
+                        console.log('itemsCount:', videoCount);
+                        console.groupEnd();
                         navigate("/playlist", { state: { clientPNumber: list.client_p_number, clientName: list.client_name, listId: list.id, mode: 'edit' } });
                         onClose?.();
                       }}
