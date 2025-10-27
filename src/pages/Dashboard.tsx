@@ -26,10 +26,12 @@ import Sidebar from "@/components/Sidebar";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRole } from "@/hooks/useRole";
+import { useMotivationalQuotes } from "@/hooks/useMotivationalQuotes";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { isAdmin } = useRole();
+  const { currentQuote, showQuote, dismissQuote } = useMotivationalQuotes();
   const [playlistsCount, setPlaylistsCount] = useState(0);
   const [stats, setStats] = useState({
     totalVideos: 0,
@@ -146,7 +148,17 @@ const Dashboard = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <div className="space-y-2">
                     <h1 className="text-4xl font-bold tracking-tight">{greeting}, {displayName}! 👋</h1>
-                    <p className="text-blue-100 text-lg">Aqui está um resumo da sua atividade hoje</p>
+                    <p className="text-blue-100 text-lg">
+                      {showQuote ? currentQuote : "Aqui está um resumo da sua atividade hoje"}
+                    </p>
+                    {showQuote && (
+                      <button 
+                        onClick={dismissQuote}
+                        className="text-xs text-blue-200 hover:text-white underline mt-1 block"
+                      >
+                        Dispensar mensagem
+                      </button>
+                    )}
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
