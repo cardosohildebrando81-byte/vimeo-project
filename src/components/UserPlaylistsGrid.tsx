@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Download } from "lucide-react";
+import { Plus, Trash2, Download, Eye, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -148,6 +148,7 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                         onClose?.();
                       }}
                     >
+                      <Eye className="w-4 h-4 mr-2" />
                       Ver Playlist
                     </Button>
                     {/* Editar Playlist: mesmo fluxo de navegação, com flag de modo de edição */}
@@ -160,14 +161,15 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                         onClose?.();
                       }}
                     >
+                      <Pencil className="w-4 h-4 mr-2" />
                       Editar Playlist
                     </Button>
                     </div>
                     <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => toast.info("Exportação direta será adicionada em breve.")}> 
+                    <Button aria-label="Exportar playlist" variant="outline" size="sm" onClick={() => toast.info("Exportação direta será adicionada em breve.")}> 
                       <Download className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(list)}>
+                    <Button aria-label="Excluir playlist" variant="outline" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(list)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                     </div>

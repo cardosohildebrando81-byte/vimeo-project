@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
-import { FolderOpen, Video, Pencil, Loader2 } from 'lucide-react';
+import { FolderOpen, Video, Pencil, Loader2, Save, Trash2, FileSpreadsheet, FileText } from 'lucide-react';
 import { usePlaylist } from '@/hooks/usePlaylist';
 import { exportPlaylistToDOCX, exportPlaylistToXLSX } from '@/lib/export';
 import type { VimeoVideo } from '@/lib/vimeo';
@@ -316,6 +316,7 @@ const Playlist: React.FC = () => {
                       <Dialog open={showUserPlaylists} onOpenChange={(o) => setShowUserPlaylists(o)}>
                         <DialogTrigger asChild>
                           <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm">
+                            <FolderOpen className="h-4 w-4 mr-2" />
                             Minhas Listas
                           </Button>
                         </DialogTrigger>
@@ -359,17 +360,29 @@ const Playlist: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
               <div className="flex gap-2">
                 {/* Importante: envolver clear em arrow para não receber o MouseEvent como primeiro argumento */}
-                <Button variant="destructive" onClick={() => clear()} disabled={items.length === 0 || isHydrating}>Limpar Playlist</Button>
+                <Button variant="destructive" onClick={() => clear()} disabled={items.length === 0 || isHydrating}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Limpar Playlist
+                </Button>
                 <Button 
                   onClick={handleSave} 
                   disabled={!isValid || isSaving || isHydrating}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  {isHydrating ? 'Carregando...' : (isSaving ? 'Salvando...' : 'Salvar Playlist')}
+                  {isHydrating ? (
+                    <span className="inline-flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Carregando...</span>
+                  ) : isSaving ? (
+                    <span className="inline-flex items-center"><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</span>
+                  ) : (
+                    <span className="inline-flex items-center"><Save className="h-4 w-4 mr-2" /> Salvar Playlist</span>
+                  )}
                 </Button>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="gradient-primary" disabled={!isValid || isHydrating}>Exportar Playlist</Button>
+                    <Button className="gradient-primary" disabled={!isValid || isHydrating}>
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Exportar Playlist
+                    </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
                     <DialogHeader>
@@ -377,8 +390,12 @@ const Playlist: React.FC = () => {
                       <DialogDescription>Selecione abaixo o tipo de arquivo para exportar a playlist.</DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-3">
-                      <Button onClick={() => handleExport('xls')}>Exportar em .xlsx</Button>
-                      <Button variant="outline" onClick={() => handleExport('docx')}>Exportar em .docx</Button>
+                      <Button onClick={() => handleExport('xls')}>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar em .xlsx
+                      </Button>
+                      <Button variant="outline" onClick={() => handleExport('docx')}>
+                        <FileText className="h-4 w-4 mr-2" /> Exportar em .docx
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -428,8 +445,18 @@ const Playlist: React.FC = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {items.map(({ id, video }) => renderVideoCard(video, id))}
+              <div className="relative">
+                {isHydrating && (
+                  <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10">
+                    <div className="flex items-center gap-2 text-blue-700">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Preparando sua playlist...
+                    </div>
+                  </div>
+                )}
+                <div className="grid grid-cols-1 gap-4">
+                  {items.map(({ id, video }) => renderVideoCard(video, id))}
+                </div>
               </div>
             )}
           </div>
