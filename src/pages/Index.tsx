@@ -156,7 +156,7 @@ const Index = () => {
   </div>
 )}
 {/* Ícones com texto abaixo do CTA */}
-<div className="w-full grid grid-cols-1 sm:grid-cols-2 items-center gap-2 md:gap-4 text-sm md:text-base lg:text-lg text-muted-foreground">
+<div className="w-full flex flex-nowrap items-center gap-3 md:gap-4 text-sm md:text-base lg:text-lg text-muted-foreground">
   <div className="flex items-center gap-2 min-w-0">
     <Users className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
     <span className="whitespace-nowrap">Gestão centralizada</span>
