@@ -326,33 +326,44 @@ const Dashboard = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Playlists criadas</span>
-                      <span className="font-medium">{playlistsCount}/10</span>
+                      <span className="font-medium">{playlistsCount}</span>
                     </div>
-                    <Progress value={(playlistsCount / 10) * 100} className="h-2" />
+                    <Progress value={playlistsCount > 0 ? Math.min(100, (playlistsCount / 10) * 100) : 0} className="h-2" />
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Vídeos assistidos</span>
-                      <span className="font-medium">47/50</span>
+                      <span className="text-muted-foreground">Vídeos adicionados</span>
+                      <span className="font-medium">{stats.totalVideos}</span>
                     </div>
-                    <Progress value={94} className="h-2" />
+                    <Progress value={stats.totalVideos > 0 ? Math.min(100, (stats.totalVideos / 50) * 100) : 0} className="h-2" />
                   </div>
                   
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Avaliações dadas</span>
-                      <span className="font-medium">23/30</span>
+                      <span className="text-muted-foreground">Atividade recente</span>
+                      <span className="font-medium">{stats.recentActivity}</span>
                     </div>
-                    <Progress value={76} className="h-2" />
+                    <Progress value={stats.recentActivity > 0 ? Math.min(100, (stats.recentActivity / 20) * 100) : 0} className="h-2" />
                   </div>
 
-                  <div className="pt-4 border-t">
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                      <span>Você está 85% mais ativo este mês!</span>
+                  {stats.recentActivity > 0 && (
+                    <div className="pt-4 border-t">
+                      <div className="flex items-center gap-2 text-sm text-green-600">
+                        <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                        <span>Você tem {stats.recentActivity} atividade(s) recente(s)!</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  
+                  {stats.recentActivity === 0 && playlistsCount === 0 && stats.totalVideos === 0 && (
+                    <div className="pt-4 border-t">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="h-2 w-2 bg-muted rounded-full"></div>
+                        <span>Comece criando sua primeira playlist!</span>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -368,40 +379,52 @@ const Dashboard = () => {
                   <CardDescription>Suas últimas ações na plataforma</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
-                      <div className="h-3 w-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-green-900">Login realizado com sucesso</p>
-                        <p className="text-xs text-green-600/70 flex items-center mt-1">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          Agora mesmo
-                        </p>
+                  {stats.recentActivity > 0 ? (
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
+                        <div className="h-3 w-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-green-900">Login realizado com sucesso</p>
+                          <p className="text-xs text-green-600/70 flex items-center mt-1">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Agora mesmo
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {playlistsCount > 0 && (
+                        <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                          <div className="h-3 w-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-blue-900">Playlists criadas: {playlistsCount}</p>
+                            <p className="text-xs text-blue-600/70 flex items-center mt-1">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Atividade registrada
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl border border-purple-100">
+                        <div className="h-3 w-3 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-purple-900">Conta criada</p>
+                          <p className="text-xs text-purple-600/70 flex items-center mt-1">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {user?.created_at ? new Date(user.created_at).toLocaleDateString("pt-BR") : "N/A"}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                      <div className="h-3 w-3 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-blue-900">Nova playlist criada</p>
-                        <p className="text-xs text-blue-600/70 flex items-center mt-1">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          2 horas atrás
-                        </p>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="h-12 w-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Activity className="h-6 w-6 text-muted-foreground" />
                       </div>
+                      <p className="text-sm text-muted-foreground">Nenhuma atividade recente</p>
+                      <p className="text-xs text-muted-foreground mt-1">Comece criando uma playlist!</p>
                     </div>
-                    
-                    <div className="flex items-start gap-4 p-4 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl border border-purple-100">
-                      <div className="h-3 w-3 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-purple-900">Conta criada</p>
-                        <p className="text-xs text-purple-600/70 flex items-center mt-1">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          {user?.created_at ? new Date(user.created_at).toLocaleDateString("pt-BR") : "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
 
