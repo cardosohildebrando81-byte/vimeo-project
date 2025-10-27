@@ -149,13 +149,17 @@ const Dashboard = () => {
                     <p className="text-blue-100 text-lg">Aqui está um resumo da sua atividade hoje</p>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Nova Playlist
+                    <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
+                      <Link to="/playlist">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Nova Playlist
+                      </Link>
                     </Button>
-                    <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm">
-                      <Video className="h-4 w-4 mr-2" />
-                      Buscar Vídeos
+                    <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/20 bg-white/10 backdrop-blur-sm" asChild>
+                      <Link to="/search">
+                        <Video className="h-4 w-4 mr-2" />
+                        Buscar Vídeos
+                      </Link>
                     </Button>
                   </div>
                 </div>
