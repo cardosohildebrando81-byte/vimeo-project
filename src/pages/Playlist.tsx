@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
@@ -19,7 +20,7 @@ import { toast } from 'sonner';
 import { useLocation } from 'react-router-dom';
 
 const Playlist: React.FC = () => {
-  const { items, remove, clear } = usePlaylist();
+  const { items, remove, clear, playlists, currentId, setCurrent, createPlaylist } = usePlaylist();
   const [clientPNumber, setClientPNumber] = useState('');
   const [clientName, setClientName] = useState('');
   const { user } = useAuth();
@@ -34,6 +35,8 @@ const Playlist: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const currentPlaylistName = useMemo(() => playlists.find((p) => p.id === currentId)?.name || 'Minha Playlist', [playlists, currentId]);
 
   const isValid = useMemo(
     () => clientPNumber.trim() !== '' && clientName.trim() !== '' && items.length > 0,
@@ -201,10 +204,23 @@ const Playlist: React.FC = () => {
               <div className="relative z-10">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <div className="space-y-2">
-                    <h1 className="text-4xl font-bold tracking-tight">Minha Playlist 📋</h1>
+                    <h1 className="text-4xl font-bold tracking-tight">{currentPlaylistName} 📋</h1>
                     <p className="text-blue-100 text-lg">Organize e exporte seus vídeos selecionados</p>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3 items-center">
+                    <div className="flex items-center gap-3">
+                      <Select value={currentId ?? undefined} onValueChange={(v) => setCurrent(v)}>
+                        <SelectTrigger className="w-[240px] bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm">
+                          <SelectValue placeholder="Selecione a playlist" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {playlists.map((p) => (
+                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" onClick={() => createPlaylist('Nova Playlist')}>+ Nova Playlist</Button>
+                    </div>
                     <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
                       <Link to="/search">
                         <Video className="h-4 w-4 mr-2" />

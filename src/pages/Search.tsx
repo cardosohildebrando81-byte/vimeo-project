@@ -490,11 +490,19 @@ const Search = () => {
   };
 
   const handleAddVideo = (video: VimeoVideo) => {
-    addVideo(video);
-    toast({
-      title: 'Adicionado à Playlist',
-      description: `${video.name || 'Vídeo'} (${getId(video)})`
-    });
+    const id = getId(video);
+    if (has(id)) {
+      toast({
+        title: 'Já na playlist atual',
+        description: 'Este vídeo já foi adicionado à playlist selecionada. Você pode criar outra playlist na página Playlist e usá-lo novamente.',
+      });
+    } else {
+      addVideo(video);
+      toast({
+        title: 'Adicionado à Playlist',
+        description: `${video.name || 'Vídeo'} (${id})`
+      });
+    }
   };
 
   const handleSelectAll = () => {
@@ -821,9 +829,8 @@ const Search = () => {
                                 <Button
                                   className="w-full"
                                   onClick={() => handleAddVideo(video)}
-                                  disabled={has(getId(video))}
                                 >
-                                  {has(getId(video)) ? 'Já na Playlist' : 'Adicionar a Playlist'}
+                                  Adicionar a Playlist
                                 </Button>
                               </div>
                             </div>
@@ -901,13 +908,12 @@ const Search = () => {
                                   </div>
                                 </DialogContent>
                               </Dialog>
-                              <Button
-                                className="w-full"
-                                onClick={() => handleAddVideo(video)}
-                                disabled={has(getId(video))}
-                              >
-                                {has(getId(video)) ? 'Já na Playlist' : 'Adicionar a Playlist'}
-                              </Button>
+                            <Button
+                              className="w-full"
+                              onClick={() => handleAddVideo(video)}
+                            >
+                              Adicionar a Playlist
+                            </Button>
                             </div>
                           </div>
                         ))}
