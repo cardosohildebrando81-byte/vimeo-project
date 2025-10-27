@@ -137,16 +137,29 @@ const UserPlaylistsGrid: React.FC<UserPlaylistsGridProps> = ({ onClose }) => {
                     <span className="font-medium">{new Date(list.updated_at || list.created_at || new Date()).toLocaleDateString("pt-BR")}</span>
                   </div>
                   <div className="flex gap-2 pt-2">
+                    {/* Ver Playlist: carrega a playlist no editor */}
                     <Button
                       variant="outline"
                       size="sm"
                       className="flex-1"
                       onClick={() => {
-                        navigate("/playlist", { state: { clientPNumber: list.client_p_number, clientName: list.client_name, listId: list.id } });
+                        navigate("/playlist", { state: { clientPNumber: list.client_p_number, clientName: list.client_name, listId: list.id, mode: 'view' } });
                         onClose?.();
                       }}
                     >
-                      Ver Lista
+                      Ver Playlist
+                    </Button>
+                    {/* Editar Playlist: mesmo fluxo de navegação, com flag de modo de edição */}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        navigate("/playlist", { state: { clientPNumber: list.client_p_number, clientName: list.client_name, listId: list.id, mode: 'edit' } });
+                        onClose?.();
+                      }}
+                    >
+                      Editar Playlist
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => toast.info("Exportação direta será adicionada em breve.")}> 
                       <Download className="w-4 h-4" />
