@@ -149,18 +149,14 @@ const Index = () => {
     <div className="flex-1">
       <a href="mailto:contato@tvdoutor.com.br?subject=Solicitar%20demo" aria-label="Solicitar demo por e-mail" className="block w-full">
         <Button size={isMobile ? "sm" : "lg"} variant="outline" className="w-full border-border">
-           <span className="text-xs md:text-sm lg:text-base">Solicitar demo</span>
+           <span className="text-xs md:text-sm lg:text-base">Solicitar Acesso</span>
          </Button>
       </a>
     </div>
   </div>
 )}
 {/* Ícones com texto abaixo do CTA */}
-<div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 items-center gap-2 md:gap-4 text-sm md:text-base lg:text-lg text-muted-foreground">
-  <div className="flex items-center gap-2 min-w-0">
-    <Shield className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
-    <span className="whitespace-nowrap">Acesso restrito à equipe</span>
-  </div>
+<div className="w-full grid grid-cols-1 sm:grid-cols-2 items-center gap-2 md:gap-4 text-sm md:text-base lg:text-lg text-muted-foreground">
   <div className="flex items-center gap-2 min-w-0">
     <Users className="w-4 h-4 md:w-5 md:h-5 text-green-600" aria-hidden="true" />
     <span className="whitespace-nowrap">Gestão centralizada</span>
