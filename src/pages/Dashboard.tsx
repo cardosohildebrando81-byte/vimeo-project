@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
+import TopNavbar from "@/components/TopNavbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import Sidebar from "@/components/Sidebar";
@@ -137,7 +138,7 @@ const Dashboard = () => {
     <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50/30">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Navbar />
+        <TopNavbar />
         <main className="flex-1 container mx-auto px-4 py-8">
           <div className="max-w-7xl mx-auto space-y-8">
             

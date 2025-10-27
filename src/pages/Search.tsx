@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import Navbar from "@/components/Navbar";
+import TopNavbar from "@/components/TopNavbar";
 import Footer from "@/components/Footer";
 import { useVimeo, VimeoVideo, VimeoApiResponse } from "@/lib/vimeo";
 import { CacheManager } from '../components/CacheManager';
@@ -516,7 +517,7 @@ const Search = () => {
     <div className="min-h-screen flex">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Navbar />
+        <TopNavbar />
         <main className="flex-1 container mx-auto px-4 py-8">
           {/* Hero Header com Gradiente */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-8 text-white mb-8">
@@ -820,9 +821,9 @@ const Search = () => {
                                 <Button
                                   className="w-full"
                                   onClick={() => handleAddVideo(video)}
-                                  disabled={has(video.uri.split('/').pop() || video.uri)}
+                                  disabled={has(getId(video))}
                                 >
-                                  Adicionar a Playlist
+                                  {has(getId(video)) ? 'Já na Playlist' : 'Adicionar a Playlist'}
                                 </Button>
                               </div>
                             </div>
@@ -903,9 +904,9 @@ const Search = () => {
                               <Button
                                 className="w-full"
                                 onClick={() => handleAddVideo(video)}
-                                disabled={has(video.uri.split('/').pop() || video.uri)}
+                                disabled={has(getId(video))}
                               >
-                                Adicionar a Playlist
+                                {has(getId(video)) ? 'Já na Playlist' : 'Adicionar a Playlist'}
                               </Button>
                             </div>
                           </div>

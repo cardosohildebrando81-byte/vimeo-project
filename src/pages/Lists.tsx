@@ -2,6 +2,7 @@ import { Plus, Trash2, Download, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
+import TopNavbar from "@/components/TopNavbar";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import { useEffect, useMemo, useState } from "react";
@@ -81,7 +82,7 @@ const Lists = () => {
     <div className="min-h-screen flex">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Navbar />
+        <TopNavbar />
         <main className="flex-1 py-12">
           <div className="container mx-auto px-4">
             {/* Hero Header */}

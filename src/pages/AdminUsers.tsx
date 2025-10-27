@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import TopNavbar from "@/components/TopNavbar";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -272,7 +273,7 @@ const AdminUsers = () => {
       <div className="flex flex-1">
         <Sidebar />
         <div className="flex-1 flex flex-col">
-          <Navbar />
+          <TopNavbar />
           <main className="flex-1 container mx-auto px-4 py-8">
             {/* Hero Header */}
             <div className="relative mb-8 p-8 rounded-2xl bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 text-white overflow-hidden">

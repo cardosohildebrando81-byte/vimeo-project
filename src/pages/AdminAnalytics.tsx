@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { BarChart3, Video, List, Download, Users, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
+import TopNavbar from "@/components/TopNavbar";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -227,7 +228,7 @@ const AdminAnalytics = () => {
       <div className="min-h-screen flex bg-gradient-to-br from-slate-50 to-blue-50/30">
         <Sidebar />
         <div className="flex-1 flex flex-col">
-          <Navbar />
+          <TopNavbar />
           <main className="flex-1 container mx-auto px-4 py-8">
             <div className="flex items-center justify-center h-64">
               <div className="text-lg text-muted-foreground">Carregando analytics administrativos...</div>
