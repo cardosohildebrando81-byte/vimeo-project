@@ -296,6 +296,10 @@ const Playlist: React.FC = () => {
                           </div>
                         </DialogContent>
                       </Dialog>
+                      {/* Novo botão: Ver todas as listas (navega para /lists) */}
+                      <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
+                        <Link to="/lists">Minhas Listas</Link>
+                      </Button>
                     </div>
                     <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" asChild>
                       <Link to="/search">
