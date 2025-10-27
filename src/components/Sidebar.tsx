@@ -59,7 +59,7 @@ const Sidebar = () => {
   const handleSignOut = async () => {
     const { success } = await signOut();
     if (success) {
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
     }
   };
 
