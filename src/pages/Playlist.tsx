@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import Sidebar from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// Removed Select import (playlist selector button) per user request
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
@@ -217,16 +217,6 @@ const Playlist: React.FC = () => {
                   </div>
                   <div className="flex flex-col sm:flex-row gap-3 items-center">
                     <div className="flex items-center gap-3">
-                      <Select value={currentId ?? undefined} onValueChange={(v) => setCurrent(v)}>
-                        <SelectTrigger className="w-[240px] bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm">
-                          <SelectValue placeholder="Selecione a playlist" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {playlists.map((p) => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                       <Button size="lg" className="bg-white/20 hover:bg-white/30 border-white/30 text-white backdrop-blur-sm" onClick={() => createPlaylist('Nova Playlist')}>+ Nova Playlist</Button>
                       {/* Botão para abrir modal com as listas do usuário, replicando /lists */}
                       <Dialog open={showUserPlaylists} onOpenChange={(o) => setShowUserPlaylists(o)}>
