@@ -71,3 +71,9 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+ 
+## CI
+
+chore: trigger vercel auto-deploy (preview test)
+
+This section exists only to trigger a Preview deployment via GitHub → Vercel integration.

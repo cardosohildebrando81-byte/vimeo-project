@@ -48,134 +48,151 @@ const Playlist: React.FC = () => {
 
       // Se veio de "Ver/Editar Playlist", hidratar itens a partir do Supabase
       const listId = state.listId as string | undefined;
-      if (listId) {
-        const hydrateFromSupabase = async () => {
-          try {
-            setIsHydrating(true);
-            const { data, error } = await supabase
-              .from('playlists')
-              .select('id, client_p_number, client_name, items')
-              .eq('id', listId)
-              .maybeSingle();
 
-            const record = error ? null : data;
-            if (!record) {
-              // Fallback: tentar por chave composta
-              const { data: alt, error: e2 } = await supabase
-                .from('playlists')
-                .select('id, client_p_number, client_name, items')
-                .eq('user_id', user?.id || '')
-                .eq('client_p_number', state.clientPNumber || '')
-                .eq('client_name', state.clientName || '')
-                .maybeSingle();
-              if (e2) {
-                toast.error('Não foi possível carregar a playlist');
-                setHydrationNotice({ type: 'not_found', details: { listId: listId, clientName: state.clientName, clientPNumber: state.clientPNumber } });
-                console.group('[Playlist Hydration] Not Found');
-                console.log('userId:', user?.id);
-                console.log('listId:', listId);
-                console.log('clientPNumber:', state.clientPNumber);
-                console.log('clientName:', state.clientName);
-                console.warn('Supabase error:', e2);
-                console.groupEnd();
-                return;
-              }
-              if (!alt) {
-                toast.warning('Playlist não encontrada');
-                setHydrationNotice({ type: 'not_found', details: { listId: listId, clientName: state.clientName, clientPNumber: state.clientPNumber } });
-                console.group('[Playlist Hydration] Not Found');
-                console.log('userId:', user?.id);
-                console.log('listId:', listId);
-                console.log('clientPNumber:', state.clientPNumber);
-                console.log('clientName:', state.clientName);
-                console.groupEnd();
-                return;
-              }
-              await hydrateItems(alt.items || []);
-            } else {
-              await hydrateItems(record.items || []);
-            }
-            toast.success('Playlist carregada para edição');
-          } catch (e: any) {
-            console.warn('[Hydrate] Erro ao carregar playlist:', e);
-            toast.error('Falha ao carregar playlist', { description: e?.message || 'Erro desconhecido' });
-          } finally {
-            setIsHydrating(false);
+      const hydrateItems = async (itemsRaw: Array<{ id?: string; uri?: string; name?: string }>) => {
+        // Converter itens do banco em vídeos completos; se falhar, usar dados mínimos
+        try {
+          // Garantir que existe uma playlist corrente
+          let pid = currentId;
+          if (!pid) {
+            pid = createPlaylist('Playlist carregada');
+            setCurrent(pid);
           }
-        };
-
-        const hydrateItems = async (itemsRaw: Array<{ id?: string; uri?: string; name?: string }>) => {
-          // Converter itens do banco em vídeos completos; se falhar, usar dados mínimos
-          try {
-            // Garantir que existe uma playlist corrente
-            let pid = currentId;
-            if (!pid) {
-              pid = createPlaylist('Playlist carregada');
-              setCurrent(pid);
+          // Primeiro, limpar a playlist atual para evitar duplicatas
+          clear(pid);
+          const videoIds = itemsRaw.map((it) => {
+            if (typeof it.id === 'string' && it.id.trim() !== '') return it.id;
+            if (typeof it.uri === 'string') {
+              const parts = it.uri.split('/');
+              return parts[parts.length - 1] || it.uri;
             }
-            // Primeiro, limpar a playlist atual para evitar duplicatas
-            clear(pid);
-            const videoIds = itemsRaw.map((it) => {
-              if (typeof it.id === 'string' && it.id.trim() !== '') return it.id;
-              if (typeof it.uri === 'string') {
-                const parts = it.uri.split('/');
-                return parts[parts.length - 1] || it.uri;
-              }
-              return '';
-            }).filter(Boolean);
+            return '';
+          }).filter(Boolean);
 
-            if (videoIds.length === 0) {
-              setHydrationNotice((prev) => {
-                const base = (location as any)?.state || {};
-                return { type: 'empty', details: { listId: base.listId, clientName: base.clientName, clientPNumber: base.clientPNumber, itemCount: 0 } };
-              });
-            } else {
-              setHydrationNotice(null);
+          if (videoIds.length === 0) {
+            setHydrationNotice((prev) => {
+              const base = (location as any)?.state || {};
+              return { type: 'empty', details: { listId: base.listId, clientName: base.clientName, clientPNumber: base.clientPNumber, itemCount: 0 } };
+            });
+          } else {
+            setHydrationNotice(null);
+          }
+
+          const videos: VimeoVideo[] = await Promise.all(videoIds.map(async (vid) => {
+            try {
+              const v = await getVideo(vid);
+              return v;
+            } catch {
+              // Fallback mínimo quando não conseguimos pegar do Vimeo
+              return {
+                uri: `/videos/${vid}`,
+                name: itemsRaw.find((i) => i.id === vid)?.name || `Vídeo ${vid}`,
+                description: '',
+                link: '',
+                duration: 0,
+                created_time: new Date().toISOString(),
+                modified_time: new Date().toISOString(),
+                status: 'available',
+                privacy: { view: 'anybody', embed: 'public' },
+                pictures: { uri: '', active: false, sizes: [] },
+              } as VimeoVideo;
             }
+          }));
 
-            const videos: VimeoVideo[] = await Promise.all(videoIds.map(async (vid) => {
-              try {
-                const v = await getVideo(vid);
-                return v;
-              } catch {
-                // Fallback mínimo quando não conseguimos pegar do Vimeo
-                return {
-                  uri: `/videos/${vid}`,
-                  name: itemsRaw.find((i) => i.id === vid)?.name || `Vídeo ${vid}`,
-                  description: '',
-                  link: '',
-                  duration: 0,
-                  created_time: new Date().toISOString(),
-                  modified_time: new Date().toISOString(),
-                  status: 'available',
-                  privacy: { view: 'anybody', embed: 'public' },
-                  pictures: { uri: '', active: false, sizes: [] },
-                } as VimeoVideo;
-              }
-            }));
+          // Adiciona todos os vídeos carregados
+          if (videos.length > 0) {
+            addMany(videos, pid);
+          }
+          console.group('[Playlist Hydration] Items');
+          console.log('listId:', (location as any)?.state?.listId);
+          console.log('clientPNumber:', (location as any)?.state?.clientPNumber);
+          console.log('clientName:', (location as any)?.state?.clientName);
+          console.log('videoIds:', videoIds);
+          console.log('videosLoaded:', videos.length);
+          console.groupEnd();
+        } catch (e) {
+          console.warn('[Hydrate] Falha ao hidratar itens:', e);
+          toast.error('Falha ao carregar itens da playlist. Tente novamente.');
+        }
+      };
 
-            // Adiciona todos os vídeos carregados
-            if (videos.length > 0) {
-              addMany(videos, pid);
-            }
-            console.group('[Playlist Hydration] Items');
-            console.log('listId:', (location as any)?.state?.listId);
-            console.log('clientPNumber:', (location as any)?.state?.clientPNumber);
-            console.log('clientName:', (location as any)?.state?.clientName);
-            console.log('videoIds:', videoIds);
-            console.log('videosLoaded:', videos.length);
+      const hydrateFromSupabaseById = async (id: string) => {
+        try {
+          setIsHydrating(true);
+          const { data, error } = await supabase
+            .from('playlists')
+            .select('id, client_p_number, client_name, items')
+            .eq('id', id)
+            .maybeSingle();
+
+          const record = error ? null : data;
+          if (!record) {
+            // Fallback: tentar por chave composta
+            await hydrateFromSupabaseByComposite();
+          } else {
+            await hydrateItems(record.items || []);
+          }
+          toast.success('Playlist carregada para edição');
+        } catch (e: any) {
+          console.warn('[Hydrate] Erro ao carregar playlist:', e);
+          toast.error('Falha ao carregar playlist', { description: e?.message || 'Erro desconhecido' });
+        } finally {
+          setIsHydrating(false);
+        }
+      };
+
+      const hydrateFromSupabaseByComposite = async () => {
+        try {
+          setIsHydrating(true);
+          const { data: alt, error: e2 } = await supabase
+            .from('playlists')
+            .select('id, client_p_number, client_name, items')
+            .eq('user_id', user?.id || '')
+            .eq('client_p_number', state.clientPNumber || '')
+            .eq('client_name', state.clientName || '')
+            .maybeSingle();
+          if (e2) {
+            toast.error('Não foi possível carregar a playlist');
+            setHydrationNotice({ type: 'not_found', details: { listId: listId, clientName: state.clientName, clientPNumber: state.clientPNumber } });
+            console.group('[Playlist Hydration] Not Found');
+            console.log('userId:', user?.id);
+            console.log('listId:', listId);
+            console.log('clientPNumber:', state.clientPNumber);
+            console.log('clientName:', state.clientName);
+            console.warn('Supabase error:', e2);
             console.groupEnd();
-          } catch (e) {
-            console.warn('[Hydrate] Falha ao hidratar itens:', e);
-            toast.error('Falha ao carregar itens da playlist. Tente novamente.');
+            return;
           }
-        };
+          if (!alt) {
+            toast.warning('Playlist não encontrada');
+            setHydrationNotice({ type: 'not_found', details: { listId: listId, clientName: state.clientName, clientPNumber: state.clientPNumber } });
+            console.group('[Playlist Hydration] Not Found');
+            console.log('userId:', user?.id);
+            console.log('listId:', listId);
+            console.log('clientPNumber:', state.clientPNumber);
+            console.log('clientName:', state.clientName);
+            console.groupEnd();
+            return;
+          }
+          await hydrateItems(alt.items || []);
+          toast.success('Playlist carregada para edição');
+        } catch (e: any) {
+          console.warn('[Hydrate] Erro ao carregar playlist:', e);
+          toast.error('Falha ao carregar playlist', { description: e?.message || 'Erro desconhecido' });
+        } finally {
+          setIsHydrating(false);
+        }
+      };
 
-        hydrateFromSupabase();
+      // Fluxo: se houver id, tenta por id com fallback; senão, usa chaves compostas diretamente
+      if (listId) {
+        hydrateFromSupabaseById(listId);
+      } else if (state.clientPNumber && state.clientName) {
+        hydrateFromSupabaseByComposite();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [location]);
 
   const currentPlaylistName = useMemo(() => playlists.find((p) => p.id === currentId)?.name || 'Minha Playlist', [playlists, currentId]);
 
